@@ -88,10 +88,13 @@ startup project and a portfolio-grade full-stack system.
   live Supabase credentials.
 - STEP 6 automatic chart recommendation is implemented and locally verified without
   live Supabase credentials.
+- STEP 7 AI dataset Q&A is implemented and locally verified without live Supabase
+  credentials.
 - Architecture documentation lives in `docs/step-01-architecture.md`.
 - Initialization documentation lives in `docs/step-02-initialization.md`.
 - Authentication documentation lives in `docs/step-03-authentication.md`.
 - File upload documentation lives in `docs/step-04-file-upload.md`.
 - CSV parsing documentation lives in `docs/step-05-csv-parsing.md`.
 - Automatic chart documentation lives in `docs/step-06-chart-generation.md`.
-- Next task is STEP 7: implement AI Q&A.
+- AI Q&A documentation lives in `docs/step-07-ai-qa.md`.
+- Next task is STEP 8: implement AI insights.

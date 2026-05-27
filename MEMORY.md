@@ -86,6 +86,16 @@
   - Added Recharts frontend renderer with loading, empty state, and toast feedback.
   - User asked that future sessions try pushing from Codex first before asking for
     manual push.
+- STEP 7 progress:
+  - Added dataset-grounded AI Q&A endpoint at
+    `/api/v1/datasets/{dataset_id}/ai/chat`.
+  - Added `ai_conversations` and `ai_messages` migration at
+    `infra/postgres/005_ai_conversations.sql`.
+  - Implemented server-side dataset context assembly from profile, preview, and
+    chart recommendations.
+  - Implemented Mimo chat completions transport with configurable `MIMO_BASE_URL`.
+  - Added frontend AI Q&A panel with conversation state, loading state, empty state,
+    and toasts.
 
 ## Architecture Decisions
 
@@ -101,6 +111,7 @@
   - `aiService` calls provider adapters.
 - Default AI provider is Mimo:
   - `AI_PROVIDER=mimo`
+  - `MIMO_BASE_URL=https://api.xiaomimimo.com/v1`
   - `MIMO_MODEL=mimo-v2-flash`
 - Initial deterministic analysis should use pandas and numpy before invoking AI.
 - Redis and Celery will handle long-running analysis and AI jobs.

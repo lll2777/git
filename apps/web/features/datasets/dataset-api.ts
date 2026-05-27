@@ -130,6 +130,31 @@ export type ChartRecommendationResponse = {
   charts: Chart[];
 };
 
+export type AIMessage = {
+  id: string;
+  conversation_id: string;
+  role: "system" | "user" | "assistant" | "tool";
+  content: string;
+  provider: string | null;
+  model: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string | null;
+};
+
+export type AIConversation = {
+  id: string;
+  dataset_id: string;
+  title: string;
+  status: string;
+};
+
+export type DatasetChatResponse = {
+  conversation: AIConversation;
+  answer: AIMessage;
+  messages: AIMessage[];
+  tool_calls: Array<Record<string, unknown>>;
+};
+
 export async function getDatasetPreview(params: {
   accessToken: string;
   datasetId: string;
@@ -183,6 +208,27 @@ export async function recommendCharts(params: {
       headers: {
         Authorization: `Bearer ${params.accessToken}`,
       },
+    },
+  );
+}
+
+export async function askDatasetQuestion(params: {
+  accessToken: string;
+  datasetId: string;
+  question: string;
+  conversationId?: string | null;
+}) {
+  return apiFetch<DatasetChatResponse>(
+    `/api/v1/datasets/${params.datasetId}/ai/chat`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${params.accessToken}`,
+      },
+      body: JSON.stringify({
+        question: params.question,
+        conversation_id: params.conversationId,
+      }),
     },
   );
 }

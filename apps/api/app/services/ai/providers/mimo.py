@@ -6,8 +6,9 @@ from app.services.ai.providers.base import AIProvider
 
 
 class MimoProvider(AIProvider):
-    def __init__(self, api_key: str | None, model: str) -> None:
+    def __init__(self, api_key: str | None, base_url: str, model: str) -> None:
         self.api_key = api_key
+        self.base_url = base_url.rstrip("/")
         self.model = model
 
     async def chat(
@@ -20,16 +21,40 @@ class MimoProvider(AIProvider):
             return {
                 "provider": "mimo",
                 "model": self.model,
-                "content": "MIMO_API_KEY is not configured.",
+                "content": "MIMO_API_KEY is not configured. Configure it to enable live AI answers.",
                 "tool_calls": [],
                 "metadata": metadata or {},
             }
 
-        # The concrete Mimo API contract will be wired in STEP 7 after official
-        # documentation is verified. The provider boundary is already enforced.
+        request_payload: dict[str, Any] = {
+            "model": self.model,
+            "messages": messages,
+        }
+        if tools:
+            request_payload["tools"] = tools
+            request_payload["tool_choice"] = "auto"
+
         async with httpx.AsyncClient(timeout=30) as client:
-            _ = client
-            raise NotImplementedError("Mimo API transport will be implemented in STEP 7.")
+            response = await client.post(
+                f"{self.base_url}/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {self.api_key}",
+                    "Content-Type": "application/json",
+                },
+                json=request_payload,
+            )
+            response.raise_for_status()
+            payload = response.json()
+
+        message = payload.get("choices", [{}])[0].get("message", {})
+        return {
+            "provider": "mimo",
+            "model": self.model,
+            "content": message.get("content") or "",
+            "tool_calls": message.get("tool_calls") or [],
+            "usage": payload.get("usage") or {},
+            "metadata": metadata or {},
+        }
 
     async def analyze_data(
         self,
@@ -72,4 +97,3 @@ class MimoProvider(AIProvider):
             ],
             metadata={"capability": "generate_chart_config"},
         )
-

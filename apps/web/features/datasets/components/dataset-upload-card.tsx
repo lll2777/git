@@ -6,6 +6,7 @@ import { useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { DatasetQuestionPanel } from "@/features/ai/components/dataset-question-panel";
 import { useAuth } from "@/features/auth/auth-provider";
 import { ChartRecommendations } from "@/features/charts/components/chart-recommendations";
 import {
@@ -236,6 +237,8 @@ export function DatasetUploadCard() {
       />
 
       <ChartRecommendations datasetId={readyDataset?.id} />
+
+      <DatasetQuestionPanel datasetId={readyDataset?.id} />
     </div>
   );
 }

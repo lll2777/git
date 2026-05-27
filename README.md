@@ -33,6 +33,10 @@ STEP 6 is complete and locally verified without live Supabase credentials:
 
 - [docs/step-06-chart-generation.md](docs/step-06-chart-generation.md)
 
+STEP 7 is complete and locally verified without live Supabase credentials:
+
+- [docs/step-07-ai-qa.md](docs/step-07-ai-qa.md)
+
 Long-running work context is kept in [AGENTS.md](AGENTS.md) and [MEMORY.md](MEMORY.md).
 
 ## Required Stack

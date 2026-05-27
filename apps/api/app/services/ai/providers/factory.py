@@ -8,7 +8,10 @@ def create_ai_provider() -> AIProvider:
     provider = settings.ai_provider.lower()
 
     if provider == "mimo":
-        return MimoProvider(api_key=settings.mimo_api_key, model=settings.mimo_model)
+        return MimoProvider(
+            api_key=settings.mimo_api_key,
+            base_url=settings.mimo_base_url,
+            model=settings.mimo_model,
+        )
 
     raise ValueError(f"Unsupported AI provider: {settings.ai_provider}")
-
