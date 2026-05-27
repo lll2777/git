@@ -122,6 +122,14 @@
   - Added Docker Compose `api-worker` service.
   - Added frontend background jobs panel with queue action, polling, progress, and
     error states.
+- STEP 11 progress:
+  - Added controlled AI Agent workflow endpoints for running and listing agent runs.
+  - Added agent persistence migration at `infra/postgres/009_agent_runs.sql`.
+  - Agent runs save audited tool steps with input, output, status, timing, and
+    errors.
+  - Default `prepare_dashboard` workflow executes chart recommendation, insight
+    generation, and dashboard saving through existing services.
+  - Added frontend AI Agent panel with run action and step audit display.
 
 ## Architecture Decisions
 

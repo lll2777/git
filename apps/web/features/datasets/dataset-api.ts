@@ -228,6 +228,35 @@ export type JobListResponse = {
   jobs: Job[];
 };
 
+export type AgentStep = {
+  id: string;
+  run_id: string;
+  step_name: string;
+  status: "running" | "succeeded" | "failed" | "skipped";
+  input: Record<string, unknown>;
+  output: Record<string, unknown>;
+  error_message: string | null;
+  started_at: string | null;
+  completed_at: string | null;
+};
+
+export type AgentRun = {
+  id: string;
+  workspace_id: string;
+  dataset_id: string;
+  objective: string;
+  status: "running" | "succeeded" | "failed" | "cancelled";
+  result: Record<string, unknown>;
+  error_message: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  steps: AgentStep[];
+};
+
+export type AgentRunListResponse = {
+  runs: AgentRun[];
+};
+
 export async function getDatasetPreview(params: {
   accessToken: string;
   datasetId: string;
@@ -388,6 +417,36 @@ export async function listDatasetJobs(params: {
 }) {
   return apiFetch<JobListResponse>(
     `/api/v1/datasets/${params.datasetId}/jobs`,
+    {
+      headers: {
+        Authorization: `Bearer ${params.accessToken}`,
+      },
+    },
+  );
+}
+
+export async function runDatasetAgent(params: {
+  accessToken: string;
+  datasetId: string;
+  objective: string;
+}) {
+  return apiFetch<AgentRun>(`/api/v1/datasets/${params.datasetId}/agent-runs`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${params.accessToken}`,
+    },
+    body: JSON.stringify({
+      objective: params.objective,
+    }),
+  });
+}
+
+export async function listAgentRuns(params: {
+  accessToken: string;
+  datasetId: string;
+}) {
+  return apiFetch<AgentRunListResponse>(
+    `/api/v1/datasets/${params.datasetId}/agent-runs`,
     {
       headers: {
         Authorization: `Bearer ${params.accessToken}`,

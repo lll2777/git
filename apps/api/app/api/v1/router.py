@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 
+from app.api.v1.routes.agent import router as agent_router
 from app.api.v1.routes.ai import router as ai_router
 from app.api.v1.routes.auth import router as auth_router
 from app.api.v1.routes.charts import router as charts_router
@@ -11,6 +12,7 @@ from app.api.v1.routes.jobs import router as jobs_router
 
 api_router = APIRouter()
 api_router.include_router(auth_router, tags=["auth"])
+api_router.include_router(agent_router, tags=["agent"])
 api_router.include_router(ai_router, tags=["ai"])
 api_router.include_router(charts_router, tags=["charts"])
 api_router.include_router(dashboards_router, tags=["dashboards"])

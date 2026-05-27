@@ -6,6 +6,7 @@ import { useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { AgentPanel } from "@/features/agent/components/agent-panel";
 import { DatasetQuestionPanel } from "@/features/ai/components/dataset-question-panel";
 import { useAuth } from "@/features/auth/auth-provider";
 import { ChartRecommendations } from "@/features/charts/components/chart-recommendations";
@@ -251,6 +252,8 @@ export function DatasetUploadCard() {
       />
 
       <AnalysisJobPanel datasetId={readyDataset?.id} />
+
+      <AgentPanel datasetId={readyDataset?.id} />
     </div>
   );
 }

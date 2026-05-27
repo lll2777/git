@@ -97,6 +97,8 @@ startup project and a portfolio-grade full-stack system.
   Supabase credentials.
 - STEP 10 Redis/Celery async task infrastructure is implemented and locally
   verified without live Supabase credentials.
+- STEP 11 controlled AI Agent workflow is implemented and locally verified without
+  live Supabase credentials.
 - Architecture documentation lives in `docs/step-01-architecture.md`.
 - Initialization documentation lives in `docs/step-02-initialization.md`.
 - Authentication documentation lives in `docs/step-03-authentication.md`.
@@ -107,4 +109,5 @@ startup project and a portfolio-grade full-stack system.
 - AI insights documentation lives in `docs/step-08-ai-insights.md`.
 - Dashboard documentation lives in `docs/step-09-dashboards.md`.
 - Async task documentation lives in `docs/step-10-async-tasks.md`.
-- Next task is STEP 11: implement AI Agent.
+- AI Agent documentation lives in `docs/step-11-ai-agent.md`.
+- Next task is STEP 12: implement deployment plan and production setup.
