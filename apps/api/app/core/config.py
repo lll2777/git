@@ -15,12 +15,15 @@ class Settings(BaseSettings):
     redis_url: str = Field(default="redis://localhost:6379/0", alias="REDIS_URL")
 
     supabase_url: str | None = Field(default=None, alias="SUPABASE_URL")
+    supabase_publishable_key: str | None = Field(default=None, alias="SUPABASE_PUBLISHABLE_KEY")
     supabase_anon_key: str | None = Field(default=None, alias="SUPABASE_ANON_KEY")
+    supabase_secret_key: str | None = Field(default=None, alias="SUPABASE_SECRET_KEY")
     supabase_service_role_key: str | None = Field(
         default=None,
         alias="SUPABASE_SERVICE_ROLE_KEY",
     )
     supabase_jwt_secret: str | None = Field(default=None, alias="SUPABASE_JWT_SECRET")
+    supabase_jwt_audience: str = Field(default="authenticated", alias="SUPABASE_JWT_AUDIENCE")
     supabase_storage_bucket: str = Field(default="datasets", alias="SUPABASE_STORAGE_BUCKET")
 
     ai_provider: str = Field(default="mimo", alias="AI_PROVIDER")
@@ -49,4 +52,3 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
-

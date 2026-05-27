@@ -46,6 +46,17 @@
     repeatedly because connections to `github.com:443` and the GitHub connector
     backend were reset or unavailable. Run `git push` from `D:\codex_project\git`
     when network connectivity recovers.
+- STEP 3 progress:
+  - Added Supabase SSR/browser client setup.
+  - Added global `AuthProvider`, React Query provider, and Sonner toasts.
+  - Added `/login`, `/register`, and `/auth/callback`.
+  - Added FastAPI Supabase JWT verification with JWKS first and legacy JWT secret
+    compatibility.
+  - Added `/api/v1/auth/me` and `/api/v1/auth/bootstrap`.
+  - Added PostgreSQL auth migration at `infra/postgres/001_auth.sql`.
+  - Full sign-in requires real Supabase env values.
+  - Local STEP 3 commit exists, but this agent's `git push` failed because
+    `github.com:443` connections timed out or reset. Manual push may be needed again.
 
 ## Architecture Decisions
 

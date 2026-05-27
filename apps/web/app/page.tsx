@@ -1,4 +1,7 @@
-import { Activity, BarChart3, Database, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { Activity, BarChart3, Database, LogIn, Sparkles } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 
 const metrics = [
   { label: "Datasets", value: "0", icon: Database },
@@ -19,7 +22,7 @@ export default function HomePage() {
             </h1>
           </div>
           <div className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-zinc-300">
-            STEP 2 scaffold
+            STEP 3 auth
           </div>
         </header>
 
@@ -32,6 +35,17 @@ export default function HomePage() {
                   Upload data, generate charts, ask questions, and save
                   dashboards.
                 </h2>
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <Button asChild>
+                    <Link href="/login">
+                      <LogIn className="h-4 w-4" aria-hidden="true" />
+                      Sign in
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline">
+                    <Link href="/register">Create account</Link>
+                  </Button>
+                </div>
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">

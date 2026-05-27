@@ -1,0 +1,157 @@
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
+import { bootstrapCurrentUser } from "@/features/auth/auth-api";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+
+type AuthMode = "login" | "register";
+
+export function AuthForm({ mode }: { mode: AuthMode }) {
+  const router = useRouter();
+  const supabase = getSupabaseBrowserClient();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const isRegister = mode === "register";
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!supabase) {
+      toast.error("Supabase environment variables are not configured.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      if (isRegister) {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
+          },
+        });
+
+        if (error) {
+          throw error;
+        }
+
+        if (data.session?.access_token) {
+          await tryBootstrap(data.session.access_token);
+          toast.success("Account created.");
+          router.push("/");
+        } else {
+          toast.success("Check your email to confirm your account.");
+        }
+        return;
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data.session?.access_token) {
+        await tryBootstrap(data.session.access_token);
+      }
+
+      toast.success("Signed in.");
+      router.push("/");
+      router.refresh();
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Authentication failed.";
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function tryBootstrap(accessToken: string) {
+    try {
+      await bootstrapCurrentUser(accessToken);
+    } catch {
+      toast.warning(
+        "Signed in, but workspace setup is waiting for the API database.",
+      );
+    }
+  }
+
+  return (
+    <div className="w-full max-w-md rounded-[28px] border border-white/10 bg-[#111317] p-6 shadow-2xl shadow-black/30">
+      <div>
+        <p className="text-sm text-zinc-400">AI Data Analysis SaaS</p>
+        <h1 className="mt-2 text-3xl font-semibold tracking-normal">
+          {isRegister ? "Create account" : "Sign in"}
+        </h1>
+      </div>
+
+      {!supabase ? (
+        <div className="mt-6 rounded-2xl border border-amber-400/20 bg-amber-400/10 p-4 text-sm text-amber-100">
+          Configure `NEXT_PUBLIC_SUPABASE_URL` and
+          `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` before using authentication.
+        </div>
+      ) : null}
+
+      <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+        <label className="block space-y-2">
+          <span className="text-sm text-zinc-300">Email</span>
+          <input
+            className="h-11 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-sm text-white outline-none transition focus:border-white/30"
+            type="email"
+            autoComplete="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            required
+          />
+        </label>
+
+        <label className="block space-y-2">
+          <span className="text-sm text-zinc-300">Password</span>
+          <input
+            className="h-11 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-sm text-white outline-none transition focus:border-white/30"
+            type="password"
+            autoComplete={isRegister ? "new-password" : "current-password"}
+            minLength={8}
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            required
+          />
+        </label>
+
+        <Button
+          className="w-full"
+          disabled={isSubmitting || !supabase}
+          type="submit"
+        >
+          {isSubmitting
+            ? "Working..."
+            : isRegister
+              ? "Create account"
+              : "Sign in"}
+        </Button>
+      </form>
+
+      <p className="mt-5 text-sm text-zinc-400">
+        {isRegister ? "Already have an account?" : "New here?"}{" "}
+        <Link
+          className="text-white underline-offset-4 hover:underline"
+          href={isRegister ? "/login" : "/register"}
+        >
+          {isRegister ? "Sign in" : "Create account"}
+        </Link>
+      </p>
+    </div>
+  );
+}
