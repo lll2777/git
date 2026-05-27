@@ -11,7 +11,7 @@ def create_app() -> FastAPI:
     configure_logging(settings.log_level)
 
     app = FastAPI(
-        title="AI Data Analysis SaaS API",
+        title="AI Data Analysis API",
         version="0.1.0",
         docs_url="/docs" if settings.app_env != "production" else None,
         redoc_url="/redoc" if settings.app_env != "production" else None,
@@ -30,4 +30,3 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
-

@@ -1,3 +1,4 @@
+import json
 from typing import Any
 
 import httpx
@@ -76,10 +77,26 @@ class MimoProvider(AIProvider):
     ) -> dict[str, Any]:
         return await self.chat(
             messages=[
-                {"role": "system", "content": "Generate business insights from data evidence."},
+                {
+                    "role": "system",
+                    "content": (
+                        "Generate business insights from data evidence. "
+                        "Return JSON only with this shape: "
+                        "{\"insights\":[{\"title\":\"...\",\"summary\":\"...\","
+                        "\"insight_type\":\"summary|trend|anomaly|correlation|business|warning\","
+                        "\"severity\":\"info|low|medium|high\","
+                        "\"evidence\":{}}]}"
+                    ),
+                },
                 {
                     "role": "user",
-                    "content": str({"profile": dataset_profile, "chart_context": chart_context}),
+                    "content": json.dumps(
+                        {
+                            "profile": dataset_profile,
+                            "chart_context": chart_context,
+                        },
+                        ensure_ascii=False,
+                    ),
                 },
             ],
             metadata={"capability": "generate_insight"},

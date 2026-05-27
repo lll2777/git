@@ -91,7 +91,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
   return (
     <div className="w-full max-w-md rounded-[28px] border border-white/10 bg-[#111317] p-6 shadow-2xl shadow-black/30">
       <div>
-        <p className="text-sm text-zinc-400">AI Data Analysis SaaS</p>
+        <p className="text-sm text-zinc-400">AI Data Analysis</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-normal">
           {isRegister ? "Create account" : "Sign in"}
         </h1>

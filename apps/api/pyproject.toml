@@ -1,5 +1,5 @@
 [project]
-name = "ai-saas-api"
+name = "ai-data-analysis-api"
 version = "0.1.0"
 description = "FastAPI backend for the AI data analysis SaaS platform."
 requires-python = ">=3.10,<3.11"

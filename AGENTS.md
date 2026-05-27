@@ -1,6 +1,6 @@
 # Agent Operating Notes
 
-This repository is an AI data analysis SaaS platform. Treat it as a production
+This repository is the AI Data Analysis SaaS platform. Treat it as a production
 startup project and a portfolio-grade full-stack system.
 
 ## User Mandates
@@ -63,6 +63,9 @@ startup project and a portfolio-grade full-stack system.
 
 - Repository path: `D:\codex_project\git`
 - Git remote: `https://github.com/lll2777/git.git`
+- The user renamed the GitHub repository and project to `AI Data Analysis`.
+  The old remote may continue to work through GitHub redirect; prefer updating it
+  once the exact new repository slug is confirmed by a successful push.
 - Current backend Python environment: conda env `pytorch`
 - Detected Python version in `pytorch`: `Python 3.10.20`
 - `gh` CLI is not installed.
@@ -90,6 +93,8 @@ startup project and a portfolio-grade full-stack system.
   live Supabase credentials.
 - STEP 7 AI dataset Q&A is implemented and locally verified without live Supabase
   credentials.
+- STEP 8 AI insight generation is implemented and locally verified without live
+  Supabase credentials.
 - Architecture documentation lives in `docs/step-01-architecture.md`.
 - Initialization documentation lives in `docs/step-02-initialization.md`.
 - Authentication documentation lives in `docs/step-03-authentication.md`.
@@ -97,4 +102,5 @@ startup project and a portfolio-grade full-stack system.
 - CSV parsing documentation lives in `docs/step-05-csv-parsing.md`.
 - Automatic chart documentation lives in `docs/step-06-chart-generation.md`.
 - AI Q&A documentation lives in `docs/step-07-ai-qa.md`.
-- Next task is STEP 8: implement AI insights.
+- AI insights documentation lives in `docs/step-08-ai-insights.md`.
+- Next task is STEP 9: implement dashboards.

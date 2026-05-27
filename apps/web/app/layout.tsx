@@ -3,7 +3,7 @@ import { AppProviders } from "@/components/providers/app-providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AI Analytics",
+  title: "AI Data Analysis",
   description: "Production-grade AI data analysis SaaS platform.",
 };
 

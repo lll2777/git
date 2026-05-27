@@ -96,6 +96,15 @@
   - Implemented Mimo chat completions transport with configurable `MIMO_BASE_URL`.
   - Added frontend AI Q&A panel with conversation state, loading state, empty state,
     and toasts.
+- User renamed the GitHub repository and visible project name to `AI Data Analysis`.
+- STEP 8 progress:
+  - Added insight endpoints for listing and generating dataset insights.
+  - Added deterministic insight generation for dataset size, missing values,
+    outliers, strong correlations, and time-series readiness.
+  - Wired AI insight generation through `AIService.generate_insight`.
+  - Added insight persistence migration at `infra/postgres/006_insights.sql`.
+  - Added frontend business insight cards with loading, empty state, severity, and
+    source/provider tags.
 
 ## Architecture Decisions
 

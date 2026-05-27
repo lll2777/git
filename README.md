@@ -1,4 +1,4 @@
-# AI Data Analysis SaaS
+# AI Data Analysis
 
 Production-grade AI data analysis SaaS platform.
 
@@ -36,6 +36,10 @@ STEP 6 is complete and locally verified without live Supabase credentials:
 STEP 7 is complete and locally verified without live Supabase credentials:
 
 - [docs/step-07-ai-qa.md](docs/step-07-ai-qa.md)
+
+STEP 8 is complete and locally verified without live Supabase credentials:
+
+- [docs/step-08-ai-insights.md](docs/step-08-ai-insights.md)
 
 Long-running work context is kept in [AGENTS.md](AGENTS.md) and [MEMORY.md](MEMORY.md).
 

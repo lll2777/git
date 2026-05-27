@@ -155,6 +155,30 @@ export type DatasetChatResponse = {
   tool_calls: Array<Record<string, unknown>>;
 };
 
+export type Insight = {
+  id: string;
+  dataset_id: string;
+  title: string;
+  summary: string;
+  insight_type:
+    | "summary"
+    | "trend"
+    | "anomaly"
+    | "correlation"
+    | "business"
+    | "warning";
+  severity: "info" | "low" | "medium" | "high";
+  evidence: Record<string, unknown>;
+  provider: string | null;
+  model: string | null;
+  source: "deterministic" | "ai" | "user";
+  created_at: string | null;
+};
+
+export type InsightResponse = {
+  insights: Insight[];
+};
+
 export async function getDatasetPreview(params: {
   accessToken: string;
   datasetId: string;
@@ -229,6 +253,35 @@ export async function askDatasetQuestion(params: {
         question: params.question,
         conversation_id: params.conversationId,
       }),
+    },
+  );
+}
+
+export async function listInsights(params: {
+  accessToken: string;
+  datasetId: string;
+}) {
+  return apiFetch<InsightResponse>(
+    `/api/v1/datasets/${params.datasetId}/insights`,
+    {
+      headers: {
+        Authorization: `Bearer ${params.accessToken}`,
+      },
+    },
+  );
+}
+
+export async function generateInsights(params: {
+  accessToken: string;
+  datasetId: string;
+}) {
+  return apiFetch<InsightResponse>(
+    `/api/v1/datasets/${params.datasetId}/insights/generate`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${params.accessToken}`,
+      },
     },
   );
 }
