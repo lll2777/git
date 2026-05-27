@@ -78,6 +78,14 @@
   - Added analysis persistence migration at `infra/postgres/003_dataset_analysis.sql`.
   - Frontend upload flow now triggers analysis after upload confirmation and can show
     parsed preview/profile for ready datasets.
+- STEP 6 progress:
+  - Added chart recommendation endpoints for listing and generating dataset charts.
+  - Added deterministic chart recommender for bar, line, and scatter charts using
+    persisted dataset profile and preview data.
+  - Added chart persistence migration at `infra/postgres/004_charts.sql`.
+  - Added Recharts frontend renderer with loading, empty state, and toast feedback.
+  - User asked that future sessions try pushing from Codex first before asking for
+    manual push.
 
 ## Architecture Decisions
 

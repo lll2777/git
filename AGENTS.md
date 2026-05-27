@@ -22,6 +22,9 @@ startup project and a portfolio-grade full-stack system.
 - Every completed work session should update this file and `MEMORY.md` when needed.
 - Every completed work session should commit and push changes to GitHub when there
   are repository changes.
+- Try pushing from this environment before asking the user to push manually. If the
+  push fails because of connectivity or credentials, report the exact failure and
+  leave the local commit ready for manual push.
 - The user clarified that this file must be named `AGENTS.md`.
 - The user's C drive has limited free space. Prefer D drive locations for dependency
   downloads, package caches, generated artifacts, Docker volumes, datasets, and other
@@ -83,9 +86,12 @@ startup project and a portfolio-grade full-stack system.
   credentials.
 - STEP 5 CSV parsing/profile generation is implemented and locally verified without
   live Supabase credentials.
+- STEP 6 automatic chart recommendation is implemented and locally verified without
+  live Supabase credentials.
 - Architecture documentation lives in `docs/step-01-architecture.md`.
 - Initialization documentation lives in `docs/step-02-initialization.md`.
 - Authentication documentation lives in `docs/step-03-authentication.md`.
 - File upload documentation lives in `docs/step-04-file-upload.md`.
 - CSV parsing documentation lives in `docs/step-05-csv-parsing.md`.
-- Next task is STEP 6: implement automatic chart generation.
+- Automatic chart documentation lives in `docs/step-06-chart-generation.md`.
+- Next task is STEP 7: implement AI Q&A.

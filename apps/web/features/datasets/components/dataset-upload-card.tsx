@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/features/auth/auth-provider";
+import { ChartRecommendations } from "@/features/charts/components/chart-recommendations";
 import {
   analyzeDataset,
   confirmUpload,
@@ -233,6 +234,8 @@ export function DatasetUploadCard() {
         preview={previewQuery.data}
         profile={profileQuery.data}
       />
+
+      <ChartRecommendations datasetId={readyDataset?.id} />
     </div>
   );
 }

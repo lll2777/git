@@ -108,6 +108,28 @@ export type DatasetProfile = {
   categorical_aggregates: Record<string, unknown>;
 };
 
+export type ChartKind = "bar" | "line" | "scatter";
+
+export type ChartConfig = {
+  xKey: string;
+  yKey: string;
+  data: Array<Record<string, string | number | null>>;
+};
+
+export type Chart = {
+  id: string;
+  dataset_id: string;
+  title: string;
+  chart_type: ChartKind;
+  config: ChartConfig;
+  query_spec: Record<string, unknown>;
+  created_by: string;
+};
+
+export type ChartRecommendationResponse = {
+  charts: Chart[];
+};
+
 export async function getDatasetPreview(params: {
   accessToken: string;
   datasetId: string;
@@ -129,6 +151,35 @@ export async function getDatasetProfile(params: {
   return apiFetch<DatasetProfile>(
     `/api/v1/datasets/${params.datasetId}/profile`,
     {
+      headers: {
+        Authorization: `Bearer ${params.accessToken}`,
+      },
+    },
+  );
+}
+
+export async function listCharts(params: {
+  accessToken: string;
+  datasetId: string;
+}) {
+  return apiFetch<ChartRecommendationResponse>(
+    `/api/v1/datasets/${params.datasetId}/charts`,
+    {
+      headers: {
+        Authorization: `Bearer ${params.accessToken}`,
+      },
+    },
+  );
+}
+
+export async function recommendCharts(params: {
+  accessToken: string;
+  datasetId: string;
+}) {
+  return apiFetch<ChartRecommendationResponse>(
+    `/api/v1/datasets/${params.datasetId}/charts/recommend`,
+    {
+      method: "POST",
       headers: {
         Authorization: `Bearer ${params.accessToken}`,
       },
