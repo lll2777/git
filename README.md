@@ -21,6 +21,10 @@ STEP 3 is complete and locally verified without live Supabase credentials:
 
 - [docs/step-03-authentication.md](docs/step-03-authentication.md)
 
+STEP 4 is complete and locally verified without live Supabase credentials:
+
+- [docs/step-04-file-upload.md](docs/step-04-file-upload.md)
+
 Long-running work context is kept in [AGENTS.md](AGENTS.md) and [MEMORY.md](MEMORY.md).
 
 ## Required Stack

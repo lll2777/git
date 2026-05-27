@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Activity, BarChart3, Database, LogIn, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { DatasetUploadCard } from "@/features/datasets/components/dataset-upload-card";
 
 const metrics = [
   { label: "Datasets", value: "0", icon: Database },
@@ -26,7 +27,7 @@ export default function HomePage() {
           </div>
         </header>
 
-        <div className="grid flex-1 gap-6 py-8 lg:grid-cols-[1.2fr_0.8fr]">
+        <div className="grid flex-1 gap-6 py-8 lg:grid-cols-[1.15fr_0.85fr]">
           <section className="rounded-[28px] border border-white/10 bg-[#111317] p-6 shadow-2xl shadow-black/30">
             <div className="flex h-full min-h-[520px] flex-col justify-between">
               <div>
@@ -70,6 +71,7 @@ export default function HomePage() {
           </section>
 
           <aside className="space-y-4">
+            <DatasetUploadCard />
             {metrics.map((metric) => {
               const Icon = metric.icon;
               return (

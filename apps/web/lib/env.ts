@@ -5,5 +5,6 @@ export function getPublicEnv() {
     supabaseKey:
       process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    maxUploadSizeBytes: process.env.NEXT_PUBLIC_MAX_UPLOAD_SIZE_BYTES,
   };
 }

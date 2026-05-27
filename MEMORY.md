@@ -57,6 +57,18 @@
   - Full sign-in requires real Supabase env values.
   - Local STEP 3 commit exists, but this agent's `git push` failed because
     `github.com:443` connections timed out or reset. Manual push may be needed again.
+- STEP 4 progress:
+  - Added dataset upload session, confirm upload, and list endpoints.
+  - Added dataset repository/service/schema layers.
+  - Added dataset migration at `infra/postgres/002_datasets.sql`.
+  - Added Supabase Storage bucket/policy SQL at `infra/supabase/storage-policies.sql`.
+  - Added homepage dataset upload card with file validation, loading states, toasts,
+    and recent dataset empty/skeleton/list states.
+  - Upload flow uses Supabase browser client direct upload. No service role key is
+    exposed to the frontend.
+  - Full upload validation requires real Supabase env values and database migrations.
+  - STEP 4 should be committed locally; remote push is deferred because GitHub
+    connectivity is currently unavailable from this environment.
 
 ## Architecture Decisions
 

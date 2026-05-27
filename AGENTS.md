@@ -79,7 +79,10 @@ startup project and a portfolio-grade full-stack system.
 - STEP 2 scaffold is implemented and locally verified.
 - STEP 3 authentication is implemented and locally verified without live Supabase
   credentials.
+- STEP 4 file upload is implemented and locally verified without live Supabase
+  credentials.
 - Architecture documentation lives in `docs/step-01-architecture.md`.
 - Initialization documentation lives in `docs/step-02-initialization.md`.
 - Authentication documentation lives in `docs/step-03-authentication.md`.
-- Next task is STEP 4: implement file upload with Supabase Storage.
+- File upload documentation lives in `docs/step-04-file-upload.md`.
+- Next task is STEP 5: implement CSV parsing and preview.

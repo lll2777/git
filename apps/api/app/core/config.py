@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     supabase_jwt_secret: str | None = Field(default=None, alias="SUPABASE_JWT_SECRET")
     supabase_jwt_audience: str = Field(default="authenticated", alias="SUPABASE_JWT_AUDIENCE")
     supabase_storage_bucket: str = Field(default="datasets", alias="SUPABASE_STORAGE_BUCKET")
+    max_upload_size_bytes: int = Field(default=26_214_400, alias="MAX_UPLOAD_SIZE_BYTES")
 
     ai_provider: str = Field(default="mimo", alias="AI_PROVIDER")
     mimo_api_key: str | None = Field(default=None, alias="MIMO_API_KEY")
