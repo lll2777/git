@@ -7,6 +7,7 @@ from app.api.v1.routes.dashboards import router as dashboards_router
 from app.api.v1.routes.datasets import router as datasets_router
 from app.api.v1.routes.health import router as health_router
 from app.api.v1.routes.insights import router as insights_router
+from app.api.v1.routes.jobs import router as jobs_router
 
 api_router = APIRouter()
 api_router.include_router(auth_router, tags=["auth"])
@@ -16,3 +17,4 @@ api_router.include_router(dashboards_router, tags=["dashboards"])
 api_router.include_router(datasets_router, tags=["datasets"])
 api_router.include_router(health_router, tags=["health"])
 api_router.include_router(insights_router, tags=["insights"])
+api_router.include_router(jobs_router, tags=["jobs"])

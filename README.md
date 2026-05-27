@@ -45,6 +45,10 @@ STEP 9 is complete and locally verified without live Supabase credentials:
 
 - [docs/step-09-dashboards.md](docs/step-09-dashboards.md)
 
+STEP 10 is complete and locally verified without live Supabase credentials:
+
+- [docs/step-10-async-tasks.md](docs/step-10-async-tasks.md)
+
 Long-running work context is kept in [AGENTS.md](AGENTS.md) and [MEMORY.md](MEMORY.md).
 
 ## Required Stack

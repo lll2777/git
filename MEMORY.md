@@ -113,6 +113,15 @@
     `dashboard_items`.
   - Added frontend dashboard panel with save action, saved list, empty state,
     loading state, and toasts.
+- STEP 10 progress:
+  - Added Redis/Celery async task infrastructure.
+  - Added job endpoints for queueing dataset analysis, listing dataset jobs, and
+    reading a single job.
+  - Added job persistence migration at `infra/postgres/008_jobs.sql`.
+  - Added Celery app and dataset analysis task that reuses `DatasetService`.
+  - Added Docker Compose `api-worker` service.
+  - Added frontend background jobs panel with queue action, polling, progress, and
+    error states.
 
 ## Architecture Decisions
 

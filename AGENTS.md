@@ -95,6 +95,8 @@ startup project and a portfolio-grade full-stack system.
   Supabase credentials.
 - STEP 9 dashboard saving is implemented and locally verified without live
   Supabase credentials.
+- STEP 10 Redis/Celery async task infrastructure is implemented and locally
+  verified without live Supabase credentials.
 - Architecture documentation lives in `docs/step-01-architecture.md`.
 - Initialization documentation lives in `docs/step-02-initialization.md`.
 - Authentication documentation lives in `docs/step-03-authentication.md`.
@@ -104,4 +106,5 @@ startup project and a portfolio-grade full-stack system.
 - AI Q&A documentation lives in `docs/step-07-ai-qa.md`.
 - AI insights documentation lives in `docs/step-08-ai-insights.md`.
 - Dashboard documentation lives in `docs/step-09-dashboards.md`.
-- Next task is STEP 10: implement async tasks.
+- Async task documentation lives in `docs/step-10-async-tasks.md`.
+- Next task is STEP 11: implement AI Agent.

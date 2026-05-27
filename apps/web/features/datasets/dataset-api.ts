@@ -202,6 +202,32 @@ export type DashboardListResponse = {
   dashboards: DashboardSummary[];
 };
 
+export type JobStatus =
+  | "queued"
+  | "running"
+  | "succeeded"
+  | "failed"
+  | "cancelled";
+
+export type Job = {
+  id: string;
+  workspace_id: string;
+  dataset_id: string | null;
+  job_type: string;
+  status: JobStatus;
+  progress: number;
+  celery_task_id: string | null;
+  payload: Record<string, unknown>;
+  result: Record<string, unknown>;
+  error_message: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+};
+
+export type JobListResponse = {
+  jobs: Job[];
+};
+
 export async function getDatasetPreview(params: {
   accessToken: string;
   datasetId: string;
@@ -340,6 +366,32 @@ export async function saveDashboard(params: {
         title: params.title,
         description: params.description,
       }),
+    },
+  );
+}
+
+export async function enqueueAnalysisJob(params: {
+  accessToken: string;
+  datasetId: string;
+}) {
+  return apiFetch<Job>(`/api/v1/datasets/${params.datasetId}/analysis-jobs`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${params.accessToken}`,
+    },
+  });
+}
+
+export async function listDatasetJobs(params: {
+  accessToken: string;
+  datasetId: string;
+}) {
+  return apiFetch<JobListResponse>(
+    `/api/v1/datasets/${params.datasetId}/jobs`,
+    {
+      headers: {
+        Authorization: `Bearer ${params.accessToken}`,
+      },
     },
   );
 }

@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:17-alpine
-    container_name: ai-saas-postgres
+    container_name: ai-data-analysis-postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-ai_analytics}
@@ -23,7 +23,7 @@ services:
 
   redis:
     image: redis:8-alpine
-    container_name: ai-saas-redis
+    container_name: ai-data-analysis-redis
     restart: unless-stopped
     command: ["redis-server", "--appendonly", "yes"]
     ports:
@@ -35,3 +35,32 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  api-worker:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.api
+    container_name: ai-data-analysis-worker
+    restart: unless-stopped
+    command:
+      [
+        "celery",
+        "-A",
+        "app.tasks.celery_app.celery_app",
+        "worker",
+        "--loglevel=info",
+        "-c",
+        "${CELERY_WORKER_CONCURRENCY:-2}",
+        "-Q",
+        "analysis",
+      ]
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-ai_analytics}
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
