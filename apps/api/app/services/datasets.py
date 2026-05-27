@@ -11,11 +11,15 @@ from app.schemas.auth import AuthUser
 from app.schemas.dataset import (
     ConfirmUploadRequest,
     DatasetListResponse,
+    DatasetPreviewResponse,
+    DatasetProfileResponse,
     DatasetResponse,
     UploadSessionRequest,
     UploadSessionResponse,
     UploadTarget,
 )
+from app.services.analysis.profiler import DatasetProfiler
+from app.services.storage import SupabaseStorageClient
 
 ALLOWED_EXTENSIONS = {".csv", ".xls", ".xlsx"}
 ALLOWED_CONTENT_TYPES = {
@@ -103,6 +107,81 @@ class DatasetService:
                 workspace_id=workspace_id,
             ),
         )
+
+    async def analyze_dataset(self, *, user: AuthUser, dataset_id: str) -> DatasetResponse:
+        dataset = self.repository.get_dataset_for_user(dataset_id=dataset_id, user_id=user.id)
+        if dataset is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Dataset was not found.",
+            )
+
+        if dataset.status not in {"uploaded", "failed", "ready"}:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Dataset must be uploaded before analysis.",
+            )
+
+        if not dataset.storage_bucket or not dataset.storage_path or not dataset.original_filename:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Dataset storage metadata is incomplete.",
+            )
+
+        self.repository.mark_processing(dataset_id=dataset_id)
+
+        try:
+            content = await SupabaseStorageClient().download_object(
+                bucket=dataset.storage_bucket,
+                path=dataset.storage_path,
+            )
+            analysis = DatasetProfiler().analyze(
+                content=content,
+                filename=dataset.original_filename,
+            )
+            return self.repository.save_analysis(
+                dataset_id=dataset_id,
+                row_count=analysis.row_count,
+                column_count=analysis.column_count,
+                columns=analysis.columns,
+                preview_columns=analysis.preview_columns,
+                preview_rows=analysis.preview_rows,
+                summary=analysis.summary,
+                missing_values=analysis.missing_values,
+                outliers=analysis.outliers,
+                correlations=analysis.correlations,
+                time_series=analysis.time_series,
+                categorical_aggregates=analysis.categorical_aggregates,
+            )
+        except HTTPException:
+            self.repository.mark_failed(
+                dataset_id=dataset_id,
+                error_message="Storage download failed during dataset analysis.",
+            )
+            raise
+        except Exception as exc:
+            failed = self.repository.mark_failed(dataset_id=dataset_id, error_message=str(exc))
+            if failed is not None:
+                return failed
+            raise
+
+    def get_profile(self, *, user: AuthUser, dataset_id: str) -> DatasetProfileResponse:
+        profile = self.repository.get_profile(dataset_id=dataset_id, user_id=user.id)
+        if profile is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Dataset profile was not found.",
+            )
+        return profile
+
+    def get_preview(self, *, user: AuthUser, dataset_id: str) -> DatasetPreviewResponse:
+        preview = self.repository.get_preview(dataset_id=dataset_id, user_id=user.id)
+        if preview is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Dataset preview was not found.",
+            )
+        return preview
 
     def _validate_file(self, payload: UploadSessionRequest) -> None:
         extension = Path(payload.filename).suffix.lower()

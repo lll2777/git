@@ -8,8 +8,11 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/features/auth/auth-provider";
 import {
+  analyzeDataset,
   confirmUpload,
   createUploadSession,
+  getDatasetPreview,
+  getDatasetProfile,
   listDatasets,
 } from "@/features/datasets/dataset-api";
 import { getPublicEnv } from "@/lib/env";
@@ -37,6 +40,27 @@ export function DatasetUploadCard() {
     queryKey: ["datasets", session?.access_token],
     queryFn: () => listDatasets(session?.access_token ?? ""),
     enabled: Boolean(session?.access_token),
+  });
+  const readyDataset = datasetsQuery.data?.datasets.find(
+    (dataset) => dataset.status === "ready",
+  );
+  const previewQuery = useQuery({
+    queryKey: ["dataset-preview", readyDataset?.id, session?.access_token],
+    queryFn: () =>
+      getDatasetPreview({
+        accessToken: session?.access_token ?? "",
+        datasetId: readyDataset?.id ?? "",
+      }),
+    enabled: Boolean(session?.access_token && readyDataset?.id),
+  });
+  const profileQuery = useQuery({
+    queryKey: ["dataset-profile", readyDataset?.id, session?.access_token],
+    queryFn: () =>
+      getDatasetProfile({
+        accessToken: session?.access_token ?? "",
+        datasetId: readyDataset?.id ?? "",
+      }),
+    enabled: Boolean(session?.access_token && readyDataset?.id),
   });
 
   const uploadMutation = useMutation({
@@ -70,10 +94,16 @@ export function DatasetUploadCard() {
       }
 
       setUploadProgress("Confirming upload");
-      return confirmUpload({
+      const dataset = await confirmUpload({
         accessToken: session.access_token,
         datasetId: uploadSession.dataset.id,
         file,
+      });
+
+      setUploadProgress("Parsing and profiling dataset");
+      return analyzeDataset({
+        accessToken: session.access_token,
+        datasetId: dataset.id,
       });
     },
     onSuccess: async () => {
@@ -196,6 +226,116 @@ export function DatasetUploadCard() {
             No datasets uploaded yet.
           </p>
         )}
+      </div>
+
+      <DatasetPreviewPanel
+        isLoading={previewQuery.isLoading || profileQuery.isLoading}
+        preview={previewQuery.data}
+        profile={profileQuery.data}
+      />
+    </div>
+  );
+}
+
+function DatasetPreviewPanel({
+  isLoading,
+  preview,
+  profile,
+}: {
+  isLoading: boolean;
+  preview:
+    | {
+        columns: string[];
+        rows: Record<string, unknown>[];
+      }
+    | undefined;
+  profile:
+    | {
+        columns: Array<{
+          name: string;
+          data_type: string;
+          missing_count: number;
+        }>;
+        summary: Record<string, unknown>;
+      }
+    | undefined;
+}) {
+  if (isLoading) {
+    return (
+      <div className="mt-6 rounded-3xl border border-white/10 bg-white/[0.03] p-4">
+        <div className="h-4 w-32 rounded-full bg-white/[0.08]" />
+        <div className="mt-4 h-24 rounded-2xl bg-white/[0.05]" />
+      </div>
+    );
+  }
+
+  if (!preview || !profile) {
+    return null;
+  }
+
+  const visibleColumns = preview.columns.slice(0, 4);
+  const visibleRows = preview.rows.slice(0, 5);
+
+  return (
+    <div className="mt-6 rounded-3xl border border-white/10 bg-white/[0.03] p-4">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-medium text-zinc-100">Parsed preview</p>
+          <p className="mt-1 text-xs text-zinc-500">
+            {String(profile.summary.row_count ?? 0)} rows,{" "}
+            {String(profile.summary.column_count ?? 0)} columns
+          </p>
+        </div>
+        <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs text-emerald-100">
+          Ready
+        </span>
+      </div>
+
+      <div className="mt-4 overflow-hidden rounded-2xl border border-white/10">
+        <div
+          className="grid bg-white/[0.06]"
+          style={{
+            gridTemplateColumns: `repeat(${visibleColumns.length}, minmax(0, 1fr))`,
+          }}
+        >
+          {visibleColumns.map((column) => (
+            <div
+              key={column}
+              className="truncate px-3 py-2 text-xs font-medium text-zinc-300"
+            >
+              {column}
+            </div>
+          ))}
+        </div>
+        {visibleRows.map((row, index) => (
+          <div
+            key={index}
+            className="grid border-t border-white/10"
+            style={{
+              gridTemplateColumns: `repeat(${visibleColumns.length}, minmax(0, 1fr))`,
+            }}
+          >
+            {visibleColumns.map((column) => (
+              <div
+                key={column}
+                className="truncate px-3 py-2 text-xs text-zinc-500"
+              >
+                {String(row[column] ?? "")}
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        {profile.columns.slice(0, 5).map((column) => (
+          <span
+            key={column.name}
+            className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs text-zinc-300"
+          >
+            {column.name}: {column.data_type}
+          </span>
+        ))}
       </div>
     </div>
   );

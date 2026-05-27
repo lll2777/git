@@ -1,3 +1,5 @@
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
@@ -42,4 +44,38 @@ class ConfirmUploadRequest(BaseModel):
 
 class DatasetListResponse(BaseModel):
     datasets: list[DatasetResponse]
+
+
+class DatasetColumnProfile(BaseModel):
+    name: str
+    original_name: str
+    data_type: str
+    semantic_type: str | None = None
+    nullable: bool
+    missing_count: int
+    unique_count: int | None = None
+    min_value: str | None = None
+    max_value: str | None = None
+    mean_value: float | None = None
+    median_value: float | None = None
+    stddev_value: float | None = None
+    profile: dict[str, Any] = {}
+
+
+class DatasetProfileResponse(BaseModel):
+    dataset: DatasetResponse
+    columns: list[DatasetColumnProfile]
+    summary: dict[str, Any]
+    missing_values: dict[str, Any]
+    outliers: dict[str, Any]
+    correlations: dict[str, Any]
+    time_series: dict[str, Any]
+    categorical_aggregates: dict[str, Any]
+
+
+class DatasetPreviewResponse(BaseModel):
+    dataset_id: str
+    columns: list[str]
+    rows: list[dict[str, Any]]
+    row_count: int
 

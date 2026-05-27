@@ -8,6 +8,8 @@ from app.schemas.auth import AuthUser
 from app.schemas.dataset import (
     ConfirmUploadRequest,
     DatasetListResponse,
+    DatasetPreviewResponse,
+    DatasetProfileResponse,
     DatasetResponse,
     UploadSessionRequest,
     UploadSessionResponse,
@@ -69,3 +71,56 @@ async def list_datasets(
             detail="Database is unavailable for dataset listing.",
         ) from exc
 
+
+@router.post("/{dataset_id}/analyze", response_model=DatasetResponse)
+async def analyze_dataset(
+    dataset_id: str,
+    current_user: AuthUser = Depends(get_current_user),
+    session: Session = Depends(get_db_session),
+) -> DatasetResponse:
+    try:
+        return await DatasetService(session).analyze_dataset(
+            user=current_user,
+            dataset_id=dataset_id,
+        )
+    except SQLAlchemyError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Database is unavailable for dataset analysis.",
+        ) from exc
+
+
+@router.get("/{dataset_id}/profile", response_model=DatasetProfileResponse)
+async def get_profile(
+    dataset_id: str,
+    current_user: AuthUser = Depends(get_current_user),
+    session: Session = Depends(get_db_session),
+) -> DatasetProfileResponse:
+    try:
+        return DatasetService(session).get_profile(
+            user=current_user,
+            dataset_id=dataset_id,
+        )
+    except SQLAlchemyError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Database is unavailable for dataset profile lookup.",
+        ) from exc
+
+
+@router.get("/{dataset_id}/preview", response_model=DatasetPreviewResponse)
+async def get_preview(
+    dataset_id: str,
+    current_user: AuthUser = Depends(get_current_user),
+    session: Session = Depends(get_db_session),
+) -> DatasetPreviewResponse:
+    try:
+        return DatasetService(session).get_preview(
+            user=current_user,
+            dataset_id=dataset_id,
+        )
+    except SQLAlchemyError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Database is unavailable for dataset preview lookup.",
+        ) from exc

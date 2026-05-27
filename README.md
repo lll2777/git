@@ -25,6 +25,10 @@ STEP 4 is complete and locally verified without live Supabase credentials:
 
 - [docs/step-04-file-upload.md](docs/step-04-file-upload.md)
 
+STEP 5 is complete and locally verified without live Supabase credentials:
+
+- [docs/step-05-csv-parsing.md](docs/step-05-csv-parsing.md)
+
 Long-running work context is kept in [AGENTS.md](AGENTS.md) and [MEMORY.md](MEMORY.md).
 
 ## Required Stack

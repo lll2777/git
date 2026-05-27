@@ -69,3 +69,69 @@ export async function listDatasets(accessToken: string) {
     },
   });
 }
+
+export async function analyzeDataset(params: {
+  accessToken: string;
+  datasetId: string;
+}) {
+  return apiFetch<Dataset>(`/api/v1/datasets/${params.datasetId}/analyze`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${params.accessToken}`,
+    },
+  });
+}
+
+export type DatasetPreview = {
+  dataset_id: string;
+  columns: string[];
+  rows: Record<string, unknown>[];
+  row_count: number;
+};
+
+export type DatasetProfile = {
+  dataset: Dataset;
+  columns: Array<{
+    name: string;
+    original_name: string;
+    data_type: string;
+    semantic_type: string | null;
+    nullable: boolean;
+    missing_count: number;
+    unique_count: number | null;
+  }>;
+  summary: Record<string, unknown>;
+  missing_values: Record<string, unknown>;
+  outliers: Record<string, unknown>;
+  correlations: Record<string, unknown>;
+  time_series: Record<string, unknown>;
+  categorical_aggregates: Record<string, unknown>;
+};
+
+export async function getDatasetPreview(params: {
+  accessToken: string;
+  datasetId: string;
+}) {
+  return apiFetch<DatasetPreview>(
+    `/api/v1/datasets/${params.datasetId}/preview`,
+    {
+      headers: {
+        Authorization: `Bearer ${params.accessToken}`,
+      },
+    },
+  );
+}
+
+export async function getDatasetProfile(params: {
+  accessToken: string;
+  datasetId: string;
+}) {
+  return apiFetch<DatasetProfile>(
+    `/api/v1/datasets/${params.datasetId}/profile`,
+    {
+      headers: {
+        Authorization: `Bearer ${params.accessToken}`,
+      },
+    },
+  );
+}

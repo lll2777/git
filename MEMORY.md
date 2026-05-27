@@ -69,6 +69,15 @@
   - Full upload validation requires real Supabase env values and database migrations.
   - STEP 4 should be committed locally; remote push is deferred because GitHub
     connectivity is currently unavailable from this environment.
+- STEP 5 progress:
+  - Added Supabase Storage downloader for backend analysis.
+  - Added pandas profiler for CSV/Excel parsing, preview rows, type inference,
+    missing values, outliers, correlations, time-series ranges, and categorical
+    aggregates.
+  - Added analysis endpoints: analyze, preview, and profile.
+  - Added analysis persistence migration at `infra/postgres/003_dataset_analysis.sql`.
+  - Frontend upload flow now triggers analysis after upload confirmation and can show
+    parsed preview/profile for ready datasets.
 
 ## Architecture Decisions
 
