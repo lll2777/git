@@ -106,6 +106,13 @@
   - Added insight persistence migration at `infra/postgres/006_insights.sql`.
   - Added frontend business insight cards with loading, empty state, severity, and
     source/provider tags.
+- STEP 9 progress:
+  - Added dashboard endpoints for saving and listing dataset dashboards.
+  - Added dashboard persistence migration at `infra/postgres/007_dashboards.sql`.
+  - Dashboard MVP stores ordered references to generated charts and insights via
+    `dashboard_items`.
+  - Added frontend dashboard panel with save action, saved list, empty state,
+    loading state, and toasts.
 
 ## Architecture Decisions
 

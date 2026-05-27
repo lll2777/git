@@ -93,6 +93,8 @@ startup project and a portfolio-grade full-stack system.
   credentials.
 - STEP 8 AI insight generation is implemented and locally verified without live
   Supabase credentials.
+- STEP 9 dashboard saving is implemented and locally verified without live
+  Supabase credentials.
 - Architecture documentation lives in `docs/step-01-architecture.md`.
 - Initialization documentation lives in `docs/step-02-initialization.md`.
 - Authentication documentation lives in `docs/step-03-authentication.md`.
@@ -101,4 +103,5 @@ startup project and a portfolio-grade full-stack system.
 - Automatic chart documentation lives in `docs/step-06-chart-generation.md`.
 - AI Q&A documentation lives in `docs/step-07-ai-qa.md`.
 - AI insights documentation lives in `docs/step-08-ai-insights.md`.
-- Next task is STEP 9: implement dashboards.
+- Dashboard documentation lives in `docs/step-09-dashboards.md`.
+- Next task is STEP 10: implement async tasks.

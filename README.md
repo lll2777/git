@@ -41,6 +41,10 @@ STEP 8 is complete and locally verified without live Supabase credentials:
 
 - [docs/step-08-ai-insights.md](docs/step-08-ai-insights.md)
 
+STEP 9 is complete and locally verified without live Supabase credentials:
+
+- [docs/step-09-dashboards.md](docs/step-09-dashboards.md)
+
 Long-running work context is kept in [AGENTS.md](AGENTS.md) and [MEMORY.md](MEMORY.md).
 
 ## Required Stack

@@ -179,6 +179,29 @@ export type InsightResponse = {
   insights: Insight[];
 };
 
+export type DashboardSummary = {
+  id: string;
+  workspace_id: string;
+  dataset_id: string;
+  title: string;
+  description: string | null;
+  layout: Record<string, unknown>;
+  status: string;
+  chart_count: number;
+  insight_count: number;
+  created_at: string | null;
+  updated_at: string | null;
+};
+
+export type Dashboard = DashboardSummary & {
+  charts: Chart[];
+  insights: Insight[];
+};
+
+export type DashboardListResponse = {
+  dashboards: DashboardSummary[];
+};
+
 export async function getDatasetPreview(params: {
   accessToken: string;
   datasetId: string;
@@ -282,6 +305,41 @@ export async function generateInsights(params: {
       headers: {
         Authorization: `Bearer ${params.accessToken}`,
       },
+    },
+  );
+}
+
+export async function listDashboards(params: {
+  accessToken: string;
+  datasetId: string;
+}) {
+  return apiFetch<DashboardListResponse>(
+    `/api/v1/datasets/${params.datasetId}/dashboards`,
+    {
+      headers: {
+        Authorization: `Bearer ${params.accessToken}`,
+      },
+    },
+  );
+}
+
+export async function saveDashboard(params: {
+  accessToken: string;
+  datasetId: string;
+  title?: string;
+  description?: string;
+}) {
+  return apiFetch<Dashboard>(
+    `/api/v1/datasets/${params.datasetId}/dashboards`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${params.accessToken}`,
+      },
+      body: JSON.stringify({
+        title: params.title,
+        description: params.description,
+      }),
     },
   );
 }

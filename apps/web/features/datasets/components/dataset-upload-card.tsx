@@ -17,6 +17,7 @@ import {
   getDatasetProfile,
   listDatasets,
 } from "@/features/datasets/dataset-api";
+import { DashboardPanel } from "@/features/dashboards/components/dashboard-panel";
 import { InsightPanel } from "@/features/insights/components/insight-panel";
 import { getPublicEnv } from "@/lib/env";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -242,6 +243,11 @@ export function DatasetUploadCard() {
       <DatasetQuestionPanel datasetId={readyDataset?.id} />
 
       <InsightPanel datasetId={readyDataset?.id} />
+
+      <DashboardPanel
+        datasetId={readyDataset?.id}
+        datasetName={readyDataset?.name}
+      />
     </div>
   );
 }
