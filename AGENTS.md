@@ -66,10 +66,17 @@ startup project and a portfolio-grade full-stack system.
 - Current shell cannot run `node` or `npm`; Node.js must be installed or exposed in
   PATH before STEP 2 frontend initialization.
 - Use D drive paths for large local assets and caches where possible.
+- PowerShell 7 is available and can be used for complex commands when it behaves
+  better than Windows PowerShell.
+- A portable Node.js LTS runtime was placed on the D drive:
+  `D:\codex_project\tools\node-v24.16.0-win-x64`.
+- Prefer `D:\codex_project\cache\npm` for npm cache and
+  `D:\codex_project\cache\pip` for pip cache.
 
 ## Current Status
 
 - STEP 1 is complete.
+- STEP 2 scaffold is implemented and locally verified.
 - Architecture documentation lives in `docs/step-01-architecture.md`.
-- Next task is STEP 2: initialize frontend, backend, Docker, env files, and base
-  dependencies.
+- Initialization documentation lives in `docs/step-02-initialization.md`.
+- Next task is STEP 3: implement Supabase authentication.

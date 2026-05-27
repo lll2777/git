@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+.npm/
+
+# Next.js
+.next/
+out/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Local data and large artifacts
+data/
+uploads/
+tmp/
+*.db
+*.sqlite
+
+# Logs
+*.log
+logs/
+
+# OS and editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+

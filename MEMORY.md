@@ -26,6 +26,26 @@
   - Use `AGENTS.md`, not `agent.md`.
   - C drive space is limited. Prefer D drive for downloads, dependency caches,
     generated artifacts, Docker volumes, datasets, and other large operations.
+  - PowerShell 7 is available and may be preferred for complex local commands.
+- STEP 2 progress:
+  - Downloaded portable Node.js `v24.16.0` to `D:\codex_project\tools`.
+  - npm cache is configured at `D:\codex_project\cache\npm`.
+  - pip cache is configured at `D:\codex_project\cache\pip`.
+  - `conda install` for backend packages hit SSL EOF errors, so missing backend
+    dependencies were installed into the existing `pytorch` environment with pip.
+  - Added monorepo scaffold with `apps/web`, `apps/api`, `packages`, `infra`, and
+    Docker configuration.
+  - Added FastAPI health check and AI provider adapter skeleton.
+  - Added Next.js App Router frontend shell.
+  - Verified backend health endpoint and frontend render locally.
+  - Docker CLI is not currently available in PATH.
+  - `npm audit --omit=dev` reports a moderate advisory in Next's nested PostCSS
+    dependency. Do not run `npm audit fix --force` because it suggests a breaking
+    downgrade to Next 9. Recheck after the next stable Next release.
+  - Local commits exist for STEP 1 and STEP 2, but `git push` to GitHub failed
+    repeatedly because connections to `github.com:443` and the GitHub connector
+    backend were reset or unavailable. Run `git push` from `D:\codex_project\git`
+    when network connectivity recovers.
 
 ## Architecture Decisions
 

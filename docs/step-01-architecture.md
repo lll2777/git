@@ -386,67 +386,67 @@ All protected backend routes require a valid Supabase JWT.
 Supabase handles registration, login, password reset, and session refresh on the
 frontend. Backend routes validate tokens and expose profile bootstrap APIs.
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| GET | `/api/v1/me` | Return current user profile and workspace memberships |
-| POST | `/api/v1/me/bootstrap` | Create profile and default workspace after first login |
+| Method | Path                   | Purpose                                                |
+| ------ | ---------------------- | ------------------------------------------------------ |
+| GET    | `/api/v1/me`           | Return current user profile and workspace memberships  |
+| POST   | `/api/v1/me/bootstrap` | Create profile and default workspace after first login |
 
 ### Datasets
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| POST | `/api/v1/datasets/upload-session` | Create dataset record and signed storage upload target |
-| POST | `/api/v1/datasets/{dataset_id}/confirm-upload` | Confirm storage upload and enqueue profiling |
-| GET | `/api/v1/datasets` | List datasets in workspace |
-| GET | `/api/v1/datasets/{dataset_id}` | Get dataset metadata |
-| GET | `/api/v1/datasets/{dataset_id}/preview` | Return paginated preview rows |
-| GET | `/api/v1/datasets/{dataset_id}/profile` | Return inferred schema and statistical profile |
-| DELETE | `/api/v1/datasets/{dataset_id}` | Delete dataset metadata and storage object |
+| Method | Path                                           | Purpose                                                |
+| ------ | ---------------------------------------------- | ------------------------------------------------------ |
+| POST   | `/api/v1/datasets/upload-session`              | Create dataset record and signed storage upload target |
+| POST   | `/api/v1/datasets/{dataset_id}/confirm-upload` | Confirm storage upload and enqueue profiling           |
+| GET    | `/api/v1/datasets`                             | List datasets in workspace                             |
+| GET    | `/api/v1/datasets/{dataset_id}`                | Get dataset metadata                                   |
+| GET    | `/api/v1/datasets/{dataset_id}/preview`        | Return paginated preview rows                          |
+| GET    | `/api/v1/datasets/{dataset_id}/profile`        | Return inferred schema and statistical profile         |
+| DELETE | `/api/v1/datasets/{dataset_id}`                | Delete dataset metadata and storage object             |
 
 ### Charts
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| POST | `/api/v1/datasets/{dataset_id}/charts/recommend` | Generate chart candidates |
-| POST | `/api/v1/charts` | Create chart |
-| PATCH | `/api/v1/charts/{chart_id}` | Update chart config or position |
-| DELETE | `/api/v1/charts/{chart_id}` | Delete chart |
+| Method | Path                                             | Purpose                         |
+| ------ | ------------------------------------------------ | ------------------------------- |
+| POST   | `/api/v1/datasets/{dataset_id}/charts/recommend` | Generate chart candidates       |
+| POST   | `/api/v1/charts`                                 | Create chart                    |
+| PATCH  | `/api/v1/charts/{chart_id}`                      | Update chart config or position |
+| DELETE | `/api/v1/charts/{chart_id}`                      | Delete chart                    |
 
 ### AI
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| POST | `/api/v1/ai/chat` | Ask dataset or dashboard question |
-| POST | `/api/v1/ai/insights` | Generate business insights |
-| POST | `/api/v1/ai/chart-config` | Generate chart config through provider adapter |
-| POST | `/api/v1/ai/agent/run` | Start agent workflow |
-| GET | `/api/v1/ai/conversations` | List conversations |
-| GET | `/api/v1/ai/conversations/{conversation_id}` | Read conversation messages |
+| Method | Path                                         | Purpose                                        |
+| ------ | -------------------------------------------- | ---------------------------------------------- |
+| POST   | `/api/v1/ai/chat`                            | Ask dataset or dashboard question              |
+| POST   | `/api/v1/ai/insights`                        | Generate business insights                     |
+| POST   | `/api/v1/ai/chart-config`                    | Generate chart config through provider adapter |
+| POST   | `/api/v1/ai/agent/run`                       | Start agent workflow                           |
+| GET    | `/api/v1/ai/conversations`                   | List conversations                             |
+| GET    | `/api/v1/ai/conversations/{conversation_id}` | Read conversation messages                     |
 
 ### Dashboards
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| POST | `/api/v1/dashboards` | Create dashboard |
-| GET | `/api/v1/dashboards` | List dashboards |
-| GET | `/api/v1/dashboards/{dashboard_id}` | Read dashboard with charts and insights |
-| PATCH | `/api/v1/dashboards/{dashboard_id}` | Update metadata, layout, filters |
-| DELETE | `/api/v1/dashboards/{dashboard_id}` | Delete dashboard |
+| Method | Path                                | Purpose                                 |
+| ------ | ----------------------------------- | --------------------------------------- |
+| POST   | `/api/v1/dashboards`                | Create dashboard                        |
+| GET    | `/api/v1/dashboards`                | List dashboards                         |
+| GET    | `/api/v1/dashboards/{dashboard_id}` | Read dashboard with charts and insights |
+| PATCH  | `/api/v1/dashboards/{dashboard_id}` | Update metadata, layout, filters        |
+| DELETE | `/api/v1/dashboards/{dashboard_id}` | Delete dashboard                        |
 
 ### Sharing
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| POST | `/api/v1/dashboards/{dashboard_id}/share-links` | Create share link |
-| GET | `/api/v1/share/{token}` | Read public shared dashboard |
-| DELETE | `/api/v1/share-links/{share_link_id}` | Revoke share link |
+| Method | Path                                            | Purpose                      |
+| ------ | ----------------------------------------------- | ---------------------------- |
+| POST   | `/api/v1/dashboards/{dashboard_id}/share-links` | Create share link            |
+| GET    | `/api/v1/share/{token}`                         | Read public shared dashboard |
+| DELETE | `/api/v1/share-links/{share_link_id}`           | Revoke share link            |
 
 ### Jobs
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| GET | `/api/v1/jobs/{job_id}` | Get async task status |
-| POST | `/api/v1/jobs/{job_id}/cancel` | Request cancellation |
+| Method | Path                           | Purpose               |
+| ------ | ------------------------------ | --------------------- |
+| GET    | `/api/v1/jobs/{job_id}`        | Get async task status |
+| POST   | `/api/v1/jobs/{job_id}/cancel` | Request cancellation  |
 
 ## 7. AI And Data Analysis Capabilities
 

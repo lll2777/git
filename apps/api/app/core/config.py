@@ -1,0 +1,52 @@
+from functools import lru_cache
+
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    app_env: str = Field(default="development", alias="APP_ENV")
+    log_level: str = Field(default="info", alias="LOG_LEVEL")
+
+    database_url: str = Field(
+        default="postgresql+psycopg://postgres:postgres@localhost:5432/ai_analytics",
+        alias="DATABASE_URL",
+    )
+    redis_url: str = Field(default="redis://localhost:6379/0", alias="REDIS_URL")
+
+    supabase_url: str | None = Field(default=None, alias="SUPABASE_URL")
+    supabase_anon_key: str | None = Field(default=None, alias="SUPABASE_ANON_KEY")
+    supabase_service_role_key: str | None = Field(
+        default=None,
+        alias="SUPABASE_SERVICE_ROLE_KEY",
+    )
+    supabase_jwt_secret: str | None = Field(default=None, alias="SUPABASE_JWT_SECRET")
+    supabase_storage_bucket: str = Field(default="datasets", alias="SUPABASE_STORAGE_BUCKET")
+
+    ai_provider: str = Field(default="mimo", alias="AI_PROVIDER")
+    mimo_api_key: str | None = Field(default=None, alias="MIMO_API_KEY")
+    mimo_model: str = Field(default="mimo-v2-flash", alias="MIMO_MODEL")
+
+    openai_api_key: str | None = Field(default=None, alias="OPENAI_API_KEY")
+    openai_model: str = Field(default="gpt-4.1-mini", alias="OPENAI_MODEL")
+    deepseek_api_key: str | None = Field(default=None, alias="DEEPSEEK_API_KEY")
+    deepseek_model: str | None = Field(default=None, alias="DEEPSEEK_MODEL")
+    qwen_api_key: str | None = Field(default=None, alias="QWEN_API_KEY")
+    qwen_model: str | None = Field(default=None, alias="QWEN_MODEL")
+    claude_api_key: str | None = Field(default=None, alias="CLAUDE_API_KEY")
+    claude_model: str | None = Field(default=None, alias="CLAUDE_MODEL")
+
+    cors_origins: list[str] = ["http://localhost:3000"]
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+        populate_by_name=True,
+    )
+
+
+@lru_cache
+def get_settings() -> Settings:
+    return Settings()
+

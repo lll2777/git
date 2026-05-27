@@ -1,0 +1,22 @@
+{
+  "name": "ai-data-analysis-saas",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "npm@11.13.0",
+  "workspaces": [
+    "apps/web",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace @ai-saas/web",
+    "build": "npm run build --workspace @ai-saas/web",
+    "lint": "npm run lint --workspace @ai-saas/web",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "prettier": "^3.7.4"
+  }
+}

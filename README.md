@@ -13,6 +13,10 @@ structure, and roadmap are documented in:
 
 - [docs/step-01-architecture.md](docs/step-01-architecture.md)
 
+STEP 2 is in progress/locally verified: project initialization details are documented in:
+
+- [docs/step-02-initialization.md](docs/step-02-initialization.md)
+
 Long-running work context is kept in [AGENTS.md](AGENTS.md) and [MEMORY.md](MEMORY.md).
 
 ## Required Stack
