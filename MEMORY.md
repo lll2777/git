@@ -97,6 +97,7 @@
   - Added frontend AI Q&A panel with conversation state, loading state, empty state,
     and toasts.
 - User renamed the GitHub repository and visible project name to `AI Data Analysis`.
+  The confirmed remote URL is `https://github.com/lll2777/AI-Data-Analysis.git`.
 - STEP 8 progress:
   - Added insight endpoints for listing and generating dataset insights.
   - Added deterministic insight generation for dataset size, missing values,

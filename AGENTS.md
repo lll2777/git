@@ -62,10 +62,8 @@ startup project and a portfolio-grade full-stack system.
 ## Local Environment Facts
 
 - Repository path: `D:\codex_project\git`
-- Git remote: `https://github.com/lll2777/git.git`
+- Git remote: `https://github.com/lll2777/AI-Data-Analysis.git`
 - The user renamed the GitHub repository and project to `AI Data Analysis`.
-  The old remote may continue to work through GitHub redirect; prefer updating it
-  once the exact new repository slug is confirmed by a successful push.
 - Current backend Python environment: conda env `pytorch`
 - Detected Python version in `pytorch`: `Python 3.10.20`
 - `gh` CLI is not installed.
