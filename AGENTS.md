@@ -129,6 +129,12 @@ startup project and a portfolio-grade full-stack system.
 - If Supabase reports an invalid browser token, the frontend should clear local
   auth state and ask the user to log in again instead of repeatedly retrying with
   the same stale token.
+- Backend auth uses local Supabase JWT verification first and falls back to
+  Supabase Auth `/auth/v1/user` validation for browser access tokens that are
+  valid in Supabase but rejected by local JWKS/secret verification.
+- Homepage login UI should be auth-aware through the client `WorkspaceHero`
+  component; do not reintroduce static login buttons that stay visible after
+  login.
 - The user has not configured the large-model API key yet. Upload, parsing,
   deterministic charts, and dashboard persistence can still be tested; AI Q&A,
   AI insights, and AI Agent model-backed behavior need `MIMO_API_KEY` later.

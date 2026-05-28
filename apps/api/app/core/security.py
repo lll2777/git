@@ -1,6 +1,7 @@
 from functools import cached_property
 from typing import Any
 
+import httpx
 import jwt
 from fastapi import HTTPException, status
 from jwt import PyJWKClient
@@ -26,14 +27,25 @@ class SupabaseJWTVerifier:
             return None
         return PyJWKClient(f"{self.issuer}/.well-known/jwks.json")
 
-    def verify(self, token: str) -> AuthUser:
-        if not self.settings.supabase_jwt_secret and not self.jwks_client:
+    @cached_property
+    def supabase_api_key(self) -> str | None:
+        return self.settings.supabase_anon_key or self.settings.supabase_publishable_key
+
+    async def verify(self, token: str) -> AuthUser:
+        if (
+            not self.settings.supabase_jwt_secret
+            and not self.jwks_client
+            and not self.supabase_api_key
+        ):
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Supabase JWT verification is not configured.",
             )
 
-        payload = self._verify_with_jwks_or_secret(token)
+        try:
+            payload = self._verify_with_jwks_or_secret(token)
+        except HTTPException as exc:
+            return await self._verify_with_supabase_auth(token, exc)
 
         subject = payload.get("sub")
         email = payload.get("email")
@@ -107,3 +119,62 @@ class SupabaseJWTVerifier:
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid Supabase access token.",
             ) from exc
+
+    async def _verify_with_supabase_auth(
+        self,
+        token: str,
+        fallback_error: HTTPException,
+    ) -> AuthUser:
+        if not self.settings.supabase_url or not self.supabase_api_key:
+            raise fallback_error
+
+        url = f"{self.settings.supabase_url.rstrip('/')}/auth/v1/user"
+        try:
+            async with httpx.AsyncClient(timeout=10) as client:
+                response = await client.get(
+                    url,
+                    headers={
+                        "Authorization": f"Bearer {token}",
+                        "apikey": self.supabase_api_key,
+                    },
+                )
+        except httpx.HTTPError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Supabase Auth validation is temporarily unavailable.",
+            ) from exc
+
+        if response.status_code in {
+            status.HTTP_401_UNAUTHORIZED,
+            status.HTTP_403_FORBIDDEN,
+        }:
+            raise fallback_error
+
+        if response.is_error:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Supabase Auth validation is temporarily unavailable.",
+            )
+
+        user = response.json()
+        user_id = user.get("id")
+        if not user_id:
+            raise fallback_error
+
+        claims = self._decode_unverified_claims(token)
+        claims["supabase_user"] = user
+
+        return AuthUser(
+            id=user_id,
+            email=user.get("email") or claims.get("email"),
+            role=claims.get("role") or user.get("role"),
+            claims=claims,
+        )
+
+    @staticmethod
+    def _decode_unverified_claims(token: str) -> dict[str, Any]:
+        try:
+            claims = jwt.decode(token, options={"verify_signature": False})
+        except InvalidTokenError:
+            return {}
+        return claims if isinstance(claims, dict) else {}

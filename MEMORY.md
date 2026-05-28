@@ -236,6 +236,18 @@
     - Browser verification after reload showed the invalid local session was
       cleared and the page returned to a clear logged-out state without the invalid
       token toast.
+  - User then confirmed two remaining local issues:
+    - After login, the homepage still showed the left-side login/create-account
+      buttons even though the upload card showed the account email.
+    - Upload still returned "Invalid Supabase access token".
+  - Fixed the homepage by extracting the left hero into a client-side
+    `WorkspaceHero` component that reads `useAuth()` and replaces login buttons
+    with a logged-in status pill once a Supabase session exists.
+  - Hardened backend authentication by making `get_current_user` async and adding
+    a Supabase Auth `/auth/v1/user` validation fallback. The API now tries local
+    JWKS/legacy secret verification first, then asks Supabase Auth to validate the
+    browser access token when local verification rejects it. This handles real
+    Supabase token signing/config variants during local development.
   - Do not expose or commit local secrets. Local ignored files now include root
     `.env` and `apps/web/.env.local`.
 

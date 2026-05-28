@@ -7,8 +7,7 @@ from app.schemas.auth import AuthUser
 bearer_scheme = HTTPBearer(auto_error=True)
 
 
-def get_current_user(
+async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ) -> AuthUser:
-    return SupabaseJWTVerifier().verify(credentials.credentials)
-
+    return await SupabaseJWTVerifier().verify(credentials.credentials)
