@@ -53,6 +53,10 @@ STEP 11 is complete and locally verified without live Supabase credentials:
 
 - [docs/step-11-ai-agent.md](docs/step-11-ai-agent.md)
 
+STEP 12 is complete and locally verified:
+
+- [docs/step-12-deployment.md](docs/step-12-deployment.md)
+
 Long-running work context is kept in [AGENTS.md](AGENTS.md) and [MEMORY.md](MEMORY.md).
 
 ## Required Stack

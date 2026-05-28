@@ -130,6 +130,13 @@
   - Default `prepare_dashboard` workflow executes chart recommendation, insight
     generation, and dashboard saving through existing services.
   - Added frontend AI Agent panel with run action and step audit display.
+- STEP 12 progress:
+  - Added deployment runbook at `docs/step-12-deployment.md`.
+  - Added `vercel.json`, `render.yaml`, and `.env.production.example`.
+  - Added idempotent PostgreSQL migration runner at
+    `scripts/apply_postgres_migrations.py`.
+  - Updated API Docker image to include migrations and scripts.
+  - Updated web Dockerfile to use the renamed `@ai-data-analysis/web` workspace.
 
 ## Architecture Decisions
 

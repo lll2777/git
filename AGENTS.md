@@ -99,6 +99,8 @@ startup project and a portfolio-grade full-stack system.
   verified without live Supabase credentials.
 - STEP 11 controlled AI Agent workflow is implemented and locally verified without
   live Supabase credentials.
+- STEP 12 deployment configuration and production runbook are implemented and
+  locally verified.
 - Architecture documentation lives in `docs/step-01-architecture.md`.
 - Initialization documentation lives in `docs/step-02-initialization.md`.
 - Authentication documentation lives in `docs/step-03-authentication.md`.
@@ -110,4 +112,6 @@ startup project and a portfolio-grade full-stack system.
 - Dashboard documentation lives in `docs/step-09-dashboards.md`.
 - Async task documentation lives in `docs/step-10-async-tasks.md`.
 - AI Agent documentation lives in `docs/step-11-ai-agent.md`.
-- Next task is STEP 12: implement deployment plan and production setup.
+- Deployment documentation lives in `docs/step-12-deployment.md`.
+- The original 12-step roadmap is complete. Next work should harden production:
+  tests, CI, billing, RBAC, sharing, and real provider credentials.

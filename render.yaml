@@ -1,0 +1,68 @@
+services:
+  - type: web
+    name: ai-data-analysis-api
+    env: docker
+    dockerfilePath: infra/docker/Dockerfile.api
+    dockerContext: .
+    healthCheckPath: /api/v1/health
+    autoDeploy: false
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: LOG_LEVEL
+        value: info
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_PUBLISHABLE_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_JWT_SECRET
+        sync: false
+      - key: SUPABASE_STORAGE_BUCKET
+        value: datasets
+      - key: AI_PROVIDER
+        value: mimo
+      - key: MIMO_BASE_URL
+        value: https://api.xiaomimimo.com/v1
+      - key: MIMO_API_KEY
+        sync: false
+      - key: MIMO_MODEL
+        value: mimo-v2-flash
+
+  - type: worker
+    name: ai-data-analysis-worker
+    env: docker
+    dockerfilePath: infra/docker/Dockerfile.api
+    dockerContext: .
+    dockerCommand: celery -A app.tasks.celery_app.celery_app worker --loglevel=info -c 2 -Q analysis
+    autoDeploy: false
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: LOG_LEVEL
+        value: info
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_STORAGE_BUCKET
+        value: datasets
+      - key: AI_PROVIDER
+        value: mimo
+      - key: MIMO_BASE_URL
+        value: https://api.xiaomimimo.com/v1
+      - key: MIMO_API_KEY
+        sync: false
+      - key: MIMO_MODEL
+        value: mimo-v2-flash

@@ -41,7 +41,10 @@ class Settings(BaseSettings):
     claude_api_key: str | None = Field(default=None, alias="CLAUDE_API_KEY")
     claude_model: str | None = Field(default=None, alias="CLAUDE_MODEL")
 
-    cors_origins: list[str] = ["http://localhost:3000"]
+    cors_origins: list[str] = Field(
+        default=["http://localhost:3000"],
+        alias="CORS_ORIGINS",
+    )
 
     model_config = SettingsConfigDict(
         env_file=".env",
