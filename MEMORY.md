@@ -137,6 +137,16 @@
     `scripts/apply_postgres_migrations.py`.
   - Updated API Docker image to include migrations and scripts.
   - Updated web Dockerfile to use the renamed `@ai-data-analysis/web` workspace.
+- Production readiness progress:
+  - Added GitHub Actions CI for env template validation, formatting, frontend lint,
+    backend compile, local API smoke testing, and frontend build.
+  - Added `scripts/check_env.py` for development and production environment file
+    validation.
+  - Added `scripts/smoke_api.py` for FastAPI health smoke checks through either a
+    running server or local TestClient.
+  - Added `docs/production-readiness.md` and `samples/sales-demo.csv`.
+  - Expanded `README.md` into a project entry point with product, architecture,
+    quick start, verification, deployment, and documentation sections.
 
 ## Architecture Decisions
 

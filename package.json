@@ -11,6 +11,8 @@
     "dev": "npm run dev --workspace @ai-data-analysis/web",
     "build": "npm run build --workspace @ai-data-analysis/web",
     "lint": "npm run lint --workspace @ai-data-analysis/web",
+    "check:env": "python scripts/check_env.py --file .env --profile development",
+    "smoke:api": "conda run -n pytorch python scripts/smoke_api.py --local-testclient",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky"

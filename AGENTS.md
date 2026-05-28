@@ -101,6 +101,9 @@ startup project and a portfolio-grade full-stack system.
   live Supabase credentials.
 - STEP 12 deployment configuration and production runbook are implemented and
   locally verified.
+- Production readiness tooling is being added: GitHub Actions CI, environment
+  validation, API smoke checks, sample data, and a top-level README suitable for
+  portfolio review.
 - Architecture documentation lives in `docs/step-01-architecture.md`.
 - Initialization documentation lives in `docs/step-02-initialization.md`.
 - Authentication documentation lives in `docs/step-03-authentication.md`.

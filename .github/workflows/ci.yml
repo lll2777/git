@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    name: Verify
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Install backend dependencies
+        run: python -m pip install -e apps/api
+
+      - name: Validate env templates
+        run: |
+          python scripts/check_env.py --file .env.example --profile development --allow-placeholders
+          python scripts/check_env.py --file .env.production.example --profile production --allow-placeholders
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Lint frontend
+        run: npm run lint
+
+      - name: Compile backend
+        run: python -m compileall apps/api/app scripts
+
+      - name: Smoke API
+        working-directory: apps/api
+        run: python ../../scripts/smoke_api.py --local-testclient
+
+      - name: Build frontend
+        run: npm run build

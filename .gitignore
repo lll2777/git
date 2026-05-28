@@ -17,6 +17,7 @@ __pycache__/
 .env
 .env.*
 !.env.example
+!.env.production.example
 
 # Local data and large artifacts
 data/
@@ -34,4 +35,3 @@ logs/
 Thumbs.db
 .idea/
 .vscode/
-
