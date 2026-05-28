@@ -175,6 +175,13 @@
     verified by rerunning the policy script.
   - Restarted local backend and frontend again. Backend health and frontend HTTP
     checks passed after database and storage setup.
+  - Register page initially showed missing `NEXT_PUBLIC_SUPABASE_URL` /
+    `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` because Next.js runs from the
+    `apps/web` workspace and does not read the repository root `.env` for public
+    browser variables.
+  - Created ignored local file `apps/web/.env.local` by syncing only public
+    `NEXT_PUBLIC_*` values from root `.env`, then restarted the frontend. The
+    register page no longer rendered the missing-env warning.
 
 ## Architecture Decisions
 
