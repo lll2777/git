@@ -248,6 +248,13 @@
     JWKS/legacy secret verification first, then asks Supabase Auth to validate the
     browser access token when local verification rejects it. This handles real
     Supabase token signing/config variants during local development.
+  - User later confirmed the CSV import path works: the dataset can be uploaded,
+    parsed, typed, previewed, and recommended charts are rendered in the browser.
+    Screenshot showed parsed fields such as `date: datetime`, `region: category`,
+    `channel: category`, `revenue: integer`, and `cost: integer`, plus generated
+    bar/line/scatter recommendations.
+  - Next session can continue from post-import product hardening rather than
+    re-debugging upload/auth, unless the issue reappears after a restart.
   - Do not expose or commit local secrets. Local ignored files now include root
     `.env` and `apps/web/.env.local`.
 
