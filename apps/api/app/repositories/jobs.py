@@ -4,6 +4,7 @@ from typing import Any
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from app.repositories.records import normalize_record, normalize_records
 from app.schemas.job import JobResponse
 
 
@@ -65,7 +66,7 @@ class JobRepository:
             },
         ).mappings().one()
         self.session.commit()
-        return JobResponse(**row)
+        return JobResponse(**normalize_record(row))
 
     def set_celery_task_id(self, *, job_id: str, celery_task_id: str) -> JobResponse:
         return self._update_job(
@@ -124,7 +125,7 @@ class JobRepository:
             ),
             {"job_id": job_id, "user_id": user_id},
         ).mappings().first()
-        return JobResponse(**row) if row else None
+        return JobResponse(**normalize_record(row)) if row else None
 
     def list_for_dataset(self, *, dataset_id: str, user_id: str) -> list[JobResponse]:
         rows = self.session.execute(
@@ -153,7 +154,7 @@ class JobRepository:
             ),
             {"dataset_id": dataset_id, "user_id": user_id},
         ).mappings().all()
-        return [JobResponse(**row) for row in rows]
+        return [JobResponse(**row) for row in normalize_records(rows)]
 
     def _update_job(
         self,
@@ -202,4 +203,4 @@ class JobRepository:
             },
         ).mappings().one()
         self.session.commit()
-        return JobResponse(**row)
+        return JobResponse(**normalize_record(row))

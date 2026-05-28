@@ -182,6 +182,29 @@
   - Created ignored local file `apps/web/.env.local` by syncing only public
     `NEXT_PUBLIC_*` values from root `.env`, then restarted the frontend. The
     register page no longer rendered the missing-env warning.
+  - User successfully completed browser login through Supabase Auth.
+  - Upload initially returned API 503. Root causes investigated:
+    - Backend config loaded only the current working directory `.env`; when API was
+      started from `apps/api`, it did not read the repository root `.env`.
+    - Fixed `apps/api/app/core/config.py` to read both repository root `.env` and
+      API-local `.env`.
+    - Supabase/psycopg returns UUID columns as Python `UUID` objects, while API
+      response schemas expect strings. Added `apps/api/app/repositories/records.py`
+      and normalized repository records before constructing response models.
+    - Created the user's application workspace locally through the repository
+      bootstrap path after the browser login had created the Supabase Auth user.
+    - Multiple old `uvicorn --reload` processes were left running on port 8000,
+      causing the browser to keep hitting stale API code/config. Cleaned them and
+      restarted a single non-reload API process for stable local E2E testing.
+  - Local synthetic-token HTTP diagnostics then showed:
+    - `GET /api/v1/datasets` returned 200.
+    - `POST /api/v1/datasets/upload-session` returned 201.
+  - Browser upload later returned API 401. The verifier was updated to try Supabase
+    JWKS first and legacy `SUPABASE_JWT_SECRET` fallback second, but the real
+    browser request still returned 401. Next session should continue from JWT
+    diagnostics for the real Supabase browser token, not from DB/storage setup.
+  - Do not expose or commit local secrets. Local ignored files now include root
+    `.env` and `apps/web/.env.local`.
 
 ## Architecture Decisions
 

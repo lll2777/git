@@ -4,6 +4,7 @@ from typing import Any
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from app.repositories.records import normalize_record, normalize_records
 from app.schemas.dataset import (
     DatasetColumnProfile,
     DatasetPreviewResponse,
@@ -114,7 +115,7 @@ class DatasetRepository:
             },
         ).mappings().one()
         self.session.commit()
-        return DatasetResponse(**row)
+        return DatasetResponse(**normalize_record(row))
 
     def confirm_upload(
         self,
@@ -158,7 +159,7 @@ class DatasetRepository:
             },
         ).mappings().first()
         self.session.commit()
-        return DatasetResponse(**row) if row else None
+        return DatasetResponse(**normalize_record(row)) if row else None
 
     def list_datasets(self, *, user_id: str, workspace_id: str | None) -> list[DatasetResponse]:
         resolved_workspace_id = workspace_id or self.get_default_workspace_id(user_id)
@@ -190,7 +191,7 @@ class DatasetRepository:
             ),
             {"user_id": user_id, "workspace_id": resolved_workspace_id},
         ).mappings().all()
-        return [DatasetResponse(**row) for row in rows]
+        return [DatasetResponse(**row) for row in normalize_records(rows)]
 
     def get_dataset_for_user(self, *, dataset_id: str, user_id: str) -> DatasetResponse | None:
         row = self.session.execute(
@@ -218,7 +219,7 @@ class DatasetRepository:
             ),
             {"dataset_id": dataset_id, "user_id": user_id},
         ).mappings().first()
-        return DatasetResponse(**row) if row else None
+        return DatasetResponse(**normalize_record(row)) if row else None
 
     def mark_processing(self, *, dataset_id: str) -> None:
         self.session.execute(
@@ -259,7 +260,7 @@ class DatasetRepository:
             {"dataset_id": dataset_id, "error_message": error_message[:1000]},
         ).mappings().first()
         self.session.commit()
-        return DatasetResponse(**row) if row else None
+        return DatasetResponse(**normalize_record(row)) if row else None
 
     def save_analysis(
         self,
@@ -433,7 +434,7 @@ class DatasetRepository:
         )
 
         self.session.commit()
-        return DatasetResponse(**dataset_row)
+        return DatasetResponse(**normalize_record(dataset_row))
 
     def get_profile(self, *, dataset_id: str, user_id: str) -> DatasetProfileResponse | None:
         dataset = self.get_dataset_for_user(dataset_id=dataset_id, user_id=user_id)
@@ -486,7 +487,7 @@ class DatasetRepository:
 
         return DatasetProfileResponse(
             dataset=dataset,
-            columns=[DatasetColumnProfile(**row) for row in column_rows],
+            columns=[DatasetColumnProfile(**row) for row in normalize_records(column_rows)],
             summary=profile_row["summary"],
             missing_values=profile_row["missing_values"],
             outliers=profile_row["outliers"],

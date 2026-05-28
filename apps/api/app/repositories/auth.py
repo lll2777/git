@@ -3,6 +3,7 @@ from uuid import uuid4
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from app.repositories.records import normalize_record, normalize_records
 from app.schemas.auth import AuthUser, BootstrapRequest, ProfileResponse, WorkspaceResponse
 
 
@@ -23,7 +24,7 @@ class AuthRepository:
         ).mappings().first()
         if not row:
             return None
-        return ProfileResponse(**row)
+        return ProfileResponse(**normalize_record(row))
 
     def list_workspaces(self, user_id: str) -> list[WorkspaceResponse]:
         rows = self.session.execute(
@@ -38,7 +39,7 @@ class AuthRepository:
             ),
             {"user_id": user_id},
         ).mappings().all()
-        return [WorkspaceResponse(**row) for row in rows]
+        return [WorkspaceResponse(**row) for row in normalize_records(rows)]
 
     def bootstrap_user(self, user: AuthUser, payload: BootstrapRequest) -> tuple[ProfileResponse, WorkspaceResponse]:
         display_name = payload.display_name or (user.email.split("@")[0] if user.email else "New user")
@@ -85,7 +86,7 @@ class AuthRepository:
             profile = self.get_profile(user.id)
             if profile is None:
                 raise RuntimeError("Profile bootstrap failed.")
-            return profile, WorkspaceResponse(**existing_workspace)
+            return profile, WorkspaceResponse(**normalize_record(existing_workspace))
 
         self.session.execute(
             text(
@@ -125,4 +126,3 @@ class AuthRepository:
             slug=workspace_slug,
             role="owner",
         )
-

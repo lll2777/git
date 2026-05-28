@@ -4,6 +4,7 @@ from typing import Any
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from app.repositories.records import normalize_record, normalize_records
 from app.schemas.chart import ChartResponse
 
 
@@ -61,7 +62,7 @@ class ChartRepository:
                     "query_spec": json.dumps(recommendation["query_spec"]),
                 },
             ).mappings().one()
-            rows.append(ChartResponse(**row))
+            rows.append(ChartResponse(**normalize_record(row)))
 
         self.session.commit()
         return rows
@@ -80,5 +81,4 @@ class ChartRepository:
             ),
             {"dataset_id": dataset_id, "user_id": user_id},
         ).mappings().all()
-        return [ChartResponse(**row) for row in rows]
-
+        return [ChartResponse(**row) for row in normalize_records(rows)]

@@ -4,6 +4,7 @@ from typing import Any
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from app.repositories.records import normalize_record, normalize_records
 from app.schemas.ai import AIConversationResponse, AIMessageResponse
 
 
@@ -30,7 +31,7 @@ class AIConversationRepository:
             ),
             {"conversation_id": conversation_id, "user_id": user_id},
         ).mappings().first()
-        return AIConversationResponse(**row) if row else None
+        return AIConversationResponse(**normalize_record(row)) if row else None
 
     def create(
         self,
@@ -70,7 +71,7 @@ class AIConversationRepository:
             },
         ).mappings().one()
         self.session.commit()
-        return AIConversationResponse(**row)
+        return AIConversationResponse(**normalize_record(row))
 
     def list_messages(
         self,
@@ -98,7 +99,7 @@ class AIConversationRepository:
             ),
             {"conversation_id": conversation_id, "limit": limit},
         ).mappings().all()
-        return [AIMessageResponse(**row) for row in reversed(rows)]
+        return [AIMessageResponse(**row) for row in normalize_records(list(reversed(rows)))]
 
     def add_message(
         self,
@@ -152,4 +153,4 @@ class AIConversationRepository:
             },
         ).mappings().one()
         self.session.commit()
-        return AIMessageResponse(**row)
+        return AIMessageResponse(**normalize_record(row))

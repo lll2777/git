@@ -4,6 +4,7 @@ from typing import Any
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from app.repositories.records import normalize_record, normalize_records
 from app.schemas.dashboard import DashboardSummaryResponse
 
 
@@ -89,7 +90,7 @@ class DashboardRepository:
 
         self.session.commit()
         return DashboardSummaryResponse(
-            **row,
+            **normalize_record(row),
             chart_count=len(chart_ids),
             insight_count=len(insight_ids),
         )
@@ -125,7 +126,7 @@ class DashboardRepository:
             ),
             {"dataset_id": dataset_id, "user_id": user_id},
         ).mappings().all()
-        return [DashboardSummaryResponse(**row) for row in rows]
+        return [DashboardSummaryResponse(**row) for row in normalize_records(rows)]
 
     def get_for_user(
         self,
@@ -158,7 +159,7 @@ class DashboardRepository:
             ),
             {"dashboard_id": dashboard_id, "user_id": user_id},
         ).mappings().first()
-        return DashboardSummaryResponse(**row) if row else None
+        return DashboardSummaryResponse(**normalize_record(row)) if row else None
 
     def list_item_ids(self, *, dashboard_id: str) -> dict[str, list[str]]:
         rows = self.session.execute(

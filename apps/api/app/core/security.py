@@ -27,15 +27,13 @@ class SupabaseJWTVerifier:
         return PyJWKClient(f"{self.issuer}/.well-known/jwks.json")
 
     def verify(self, token: str) -> AuthUser:
-        if self.settings.supabase_jwt_secret:
-            payload = self._verify_with_legacy_secret(token)
-        elif self.jwks_client:
-            payload = self._verify_with_jwks(token)
-        else:
+        if not self.settings.supabase_jwt_secret and not self.jwks_client:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Supabase JWT verification is not configured.",
             )
+
+        payload = self._verify_with_jwks_or_secret(token)
 
         subject = payload.get("sub")
         email = payload.get("email")
@@ -51,6 +49,25 @@ class SupabaseJWTVerifier:
             role=payload.get("role"),
             claims=payload,
         )
+
+    def _verify_with_jwks_or_secret(self, token: str) -> dict[str, Any]:
+        errors: list[Exception] = []
+        if self.jwks_client:
+            try:
+                return self._verify_with_jwks(token)
+            except HTTPException as exc:
+                errors.append(exc)
+
+        if self.settings.supabase_jwt_secret:
+            try:
+                return self._verify_with_legacy_secret(token)
+            except HTTPException as exc:
+                errors.append(exc)
+
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid Supabase access token.",
+        ) from (errors[-1] if errors else None)
 
     def _verify_with_legacy_secret(self, token: str) -> dict[str, Any]:
         try:
@@ -90,4 +107,3 @@ class SupabaseJWTVerifier:
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid Supabase access token.",
             ) from exc
-

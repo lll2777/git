@@ -4,6 +4,7 @@ from typing import Any
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from app.repositories.records import normalize_record, normalize_records
 from app.schemas.agent import AgentRunResponse, AgentStepResponse
 
 
@@ -60,7 +61,7 @@ class AgentRunRepository:
             },
         ).mappings().one()
         self.session.commit()
-        return AgentRunResponse(**row, steps=[])
+        return AgentRunResponse(**normalize_record(row), steps=[])
 
     def start_step(
         self,
@@ -109,7 +110,7 @@ class AgentRunRepository:
             },
         ).mappings().one()
         self.session.commit()
-        return AgentStepResponse(**row)
+        return AgentStepResponse(**normalize_record(row))
 
     def complete_step(
         self,
@@ -177,7 +178,7 @@ class AgentRunRepository:
         ).mappings().first()
         if not row:
             return None
-        return AgentRunResponse(**row, steps=self.list_steps(run_id=run_id))
+        return AgentRunResponse(**normalize_record(row), steps=self.list_steps(run_id=run_id))
 
     def list_for_dataset(self, *, dataset_id: str, user_id: str) -> list[AgentRunResponse]:
         rows = self.session.execute(
@@ -203,8 +204,8 @@ class AgentRunRepository:
             {"dataset_id": dataset_id, "user_id": user_id},
         ).mappings().all()
         return [
-            AgentRunResponse(**row, steps=self.list_steps(run_id=str(row["id"])))
-            for row in rows
+            AgentRunResponse(**row, steps=self.list_steps(run_id=row["id"]))
+            for row in normalize_records(rows)
         ]
 
     def list_steps(self, *, run_id: str) -> list[AgentStepResponse]:
@@ -228,7 +229,7 @@ class AgentRunRepository:
             ),
             {"run_id": run_id},
         ).mappings().all()
-        return [AgentStepResponse(**row) for row in rows]
+        return [AgentStepResponse(**row) for row in normalize_records(rows)]
 
     def _update_step(
         self,
@@ -268,7 +269,7 @@ class AgentRunRepository:
             },
         ).mappings().one()
         self.session.commit()
-        return AgentStepResponse(**row)
+        return AgentStepResponse(**normalize_record(row))
 
     def _update_run(
         self,
@@ -308,4 +309,4 @@ class AgentRunRepository:
             },
         ).mappings().one()
         self.session.commit()
-        return AgentRunResponse(**row, steps=self.list_steps(run_id=run_id))
+        return AgentRunResponse(**normalize_record(row), steps=self.list_steps(run_id=run_id))

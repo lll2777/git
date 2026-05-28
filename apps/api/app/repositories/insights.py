@@ -4,6 +4,7 @@ from typing import Any
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from app.repositories.records import normalize_record, normalize_records
 from app.schemas.insight import InsightResponse
 
 
@@ -86,7 +87,7 @@ class InsightRepository:
                     "source": insight["source"],
                 },
             ).mappings().one()
-            rows.append(InsightResponse(**row))
+            rows.append(InsightResponse(**normalize_record(row)))
 
         self.session.commit()
         return rows
@@ -123,4 +124,4 @@ class InsightRepository:
             ),
             {"dataset_id": dataset_id, "user_id": user_id},
         ).mappings().all()
-        return [InsightResponse(**row) for row in rows]
+        return [InsightResponse(**row) for row in normalize_records(rows)]
