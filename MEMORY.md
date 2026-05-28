@@ -161,6 +161,10 @@
     Postgres, Supabase Storage policies, and optional Redis/Mimo credentials.
   - A hydration warning was observed when the in-app browser translated visible
     text; this appears browser-translation related, not a backend/API failure.
+  - First Supabase Postgres migration attempt failed with password authentication
+    for user `postgres`. The local `DATABASE_URL` parsed as a Supabase direct
+    connection, but the password segment still looked like a placeholder rather
+    than the real database password.
 
 ## Architecture Decisions
 
