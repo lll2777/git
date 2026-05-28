@@ -147,6 +147,20 @@
   - Added `docs/production-readiness.md` and `samples/sales-demo.csv`.
   - Expanded `README.md` into a project entry point with product, architecture,
     quick start, verification, deployment, and documentation sections.
+- Local live-credential setup progress:
+  - Created local `.env` from `.env.example`.
+  - User filled Supabase URL, publishable/anon key, service role key, and JWT
+    secret locally without exposing secrets in chat.
+  - `conda run -n pytorch python scripts/check_env.py --file .env --profile development`
+    passed after Supabase values were filled.
+  - Restarted local backend and frontend with the new environment.
+  - Backend is reachable at `http://127.0.0.1:8000`; `/api/v1/health` returned
+    `{"status":"ok","service":"api"}`.
+  - Frontend is reachable at `http://localhost:3000`.
+  - Current remaining local E2E blockers are database migration against Supabase
+    Postgres, Supabase Storage policies, and optional Redis/Mimo credentials.
+  - A hydration warning was observed when the in-app browser translated visible
+    text; this appears browser-translation related, not a backend/API failure.
 
 ## Architecture Decisions
 
