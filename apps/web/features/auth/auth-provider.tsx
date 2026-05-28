@@ -49,13 +49,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     const { data, error } = await supabase.auth.getSession();
-    if (error) {
+    if (error || !data.session) {
       setSession(null);
       return null;
     }
 
-    setSession(data.session);
-    return data.session?.access_token ?? null;
+    const expiresAt = data.session.expires_at ?? 0;
+    const shouldRefresh = expiresAt * 1000 - Date.now() < 60_000;
+    const session = shouldRefresh
+      ? await refreshStoredSession(supabase)
+      : data.session;
+
+    if (!session) {
+      await clearInvalidSession(supabase);
+      setSession(null);
+      return null;
+    }
+
+    const { error: userError } = await supabase.auth.getUser(
+      session.access_token,
+    );
+    if (userError) {
+      const refreshedSession = await refreshStoredSession(supabase);
+      if (refreshedSession) {
+        const { error: refreshedUserError } = await supabase.auth.getUser(
+          refreshedSession.access_token,
+        );
+        if (!refreshedUserError) {
+          setSession(refreshedSession);
+          return refreshedSession.access_token;
+        }
+      }
+
+      await clearInvalidSession(supabase);
+      setSession(null);
+      return null;
+    }
+
+    setSession(session);
+    return session.access_token;
   }, [supabase]);
 
   const signOut = useCallback(async () => {
@@ -112,6 +144,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+async function refreshStoredSession(
+  supabase: NonNullable<ReturnType<typeof getSupabaseBrowserClient>>,
+) {
+  const { data, error } = await supabase.auth.refreshSession();
+  if (error || !data.session) {
+    return null;
+  }
+  return data.session;
+}
+
+async function clearInvalidSession(
+  supabase: NonNullable<ReturnType<typeof getSupabaseBrowserClient>>,
+) {
+  try {
+    await supabase.auth.signOut({ scope: "local" });
+  } catch {
+    await supabase.auth.signOut().catch(() => undefined);
+  }
 }
 
 export function useAuth() {

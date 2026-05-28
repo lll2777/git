@@ -226,6 +226,16 @@
     parsing, deterministic chart recommendations, or dashboard persistence, but
     AI Q&A, AI insights, and AI agent AI-backed steps may fail or degrade until
     `MIMO_API_KEY` and related model environment variables are configured.
+  - After a browser screenshot showed `Invalid Supabase access token`, the frontend
+    auth provider was hardened again:
+    - `getAccessToken()` now refreshes near-expiry sessions, validates the token
+      with Supabase Auth, retries one refresh on validation failure, and clears the
+      local session if the token remains invalid.
+    - The upload card now shows the logged-in email and a Chinese "退出" button so
+      stale login state is visible and easy to clear.
+    - Browser verification after reload showed the invalid local session was
+      cleared and the page returned to a clear logged-out state without the invalid
+      token toast.
   - Do not expose or commit local secrets. Local ignored files now include root
     `.env` and `apps/web/.env.local`.
 

@@ -43,7 +43,8 @@ const ACCEPTED_MIME_TYPES = [
 export function DatasetUploadCard() {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const queryClient = useQueryClient();
-  const { getAccessToken, session, isConfigured, isLoading } = useAuth();
+  const { getAccessToken, session, signOut, isConfigured, isLoading } =
+    useAuth();
   const supabase = getSupabaseBrowserClient();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState<string | null>(null);
@@ -149,12 +150,29 @@ export function DatasetUploadCard() {
           <h2 className="mt-2 text-2xl font-semibold tracking-normal">
             上传 CSV 或 Excel
           </h2>
+          {session?.user.email ? (
+            <p className="mt-2 text-xs text-zinc-500">
+              已登录：{session.user.email}
+            </p>
+          ) : null}
         </div>
-        <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
-          <FileSpreadsheet
-            className="h-5 w-5 text-zinc-300"
-            aria-hidden="true"
-          />
+        <div className="flex items-center gap-2">
+          {session ? (
+            <Button
+              className="h-9 px-3"
+              onClick={() => void signOut()}
+              type="button"
+              variant="outline"
+            >
+              退出
+            </Button>
+          ) : null}
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+            <FileSpreadsheet
+              className="h-5 w-5 text-zinc-300"
+              aria-hidden="true"
+            />
+          </div>
         </div>
       </div>
 

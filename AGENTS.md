@@ -126,6 +126,9 @@ startup project and a portfolio-grade full-stack system.
 - Frontend protected API calls should fetch a fresh Supabase access token through
   `getAccessToken()` before each request instead of reusing a possibly stale
   `session.access_token`.
+- If Supabase reports an invalid browser token, the frontend should clear local
+  auth state and ask the user to log in again instead of repeatedly retrying with
+  the same stale token.
 - The user has not configured the large-model API key yet. Upload, parsing,
   deterministic charts, and dashboard persistence can still be tested; AI Q&A,
   AI insights, and AI Agent model-backed behavior need `MIMO_API_KEY` later.
