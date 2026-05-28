@@ -26,17 +26,16 @@ const statusClassName = {
 
 export function AnalysisJobPanel({ datasetId }: AnalysisJobPanelProps) {
   const queryClient = useQueryClient();
-  const { session } = useAuth();
-  const accessToken = session?.access_token ?? "";
+  const { getAccessToken, session } = useAuth();
 
   const jobsQuery = useQuery({
-    queryKey: ["dataset-jobs", datasetId, accessToken],
-    queryFn: () =>
+    queryKey: ["dataset-jobs", datasetId, session?.user.id],
+    queryFn: async () =>
       listDatasetJobs({
-        accessToken,
+        accessToken: await requireAccessToken(getAccessToken),
         datasetId: datasetId ?? "",
       }),
-    enabled: Boolean(accessToken && datasetId),
+    enabled: Boolean(session?.user.id && datasetId),
     refetchInterval: (query) => {
       const jobs = query.state.data?.jobs ?? [];
       return jobs.some((job) => ["queued", "running"].includes(job.status))
@@ -46,13 +45,13 @@ export function AnalysisJobPanel({ datasetId }: AnalysisJobPanelProps) {
   });
 
   const enqueueMutation = useMutation({
-    mutationFn: () =>
+    mutationFn: async () =>
       enqueueAnalysisJob({
-        accessToken,
+        accessToken: await requireAccessToken(getAccessToken),
         datasetId: datasetId ?? "",
       }),
     onSuccess: async () => {
-      toast.success("Background analysis queued.");
+      toast.success("后台分析任务已入队。");
       await queryClient.invalidateQueries({
         queryKey: ["dataset-jobs", datasetId],
       });
@@ -60,9 +59,7 @@ export function AnalysisJobPanel({ datasetId }: AnalysisJobPanelProps) {
     },
     onError: (error) => {
       toast.error(
-        error instanceof Error
-          ? error.message
-          : "Analysis job failed to queue.",
+        error instanceof Error ? error.message : "分析任务入队失败。",
       );
     },
   });
@@ -78,9 +75,9 @@ export function AnalysisJobPanel({ datasetId }: AnalysisJobPanelProps) {
     <section className="mt-6 border-t border-white/10 pt-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm font-medium text-zinc-100">Background jobs</p>
+          <p className="text-sm font-medium text-zinc-100">后台任务</p>
           <p className="mt-1 text-xs text-zinc-500">
-            Queue long-running analysis through Redis and Celery.
+            通过 Redis 和 Celery 处理耗时分析。
           </p>
         </div>
         <Button
@@ -94,7 +91,7 @@ export function AnalysisJobPanel({ datasetId }: AnalysisJobPanelProps) {
           ) : (
             <Play className="h-4 w-4" aria-hidden="true" />
           )}
-          Queue analysis
+          加入分析队列
         </Button>
       </div>
 
@@ -110,10 +107,10 @@ export function AnalysisJobPanel({ datasetId }: AnalysisJobPanelProps) {
         <div className="mt-4 flex min-h-32 flex-col items-center justify-center rounded-3xl border border-dashed border-white/15 bg-white/[0.03] px-4 text-center">
           <Clock3 className="h-6 w-6 text-zinc-400" aria-hidden="true" />
           <p className="mt-3 text-sm font-medium text-zinc-200">
-            No background jobs yet.
+            还没有后台任务。
           </p>
           <p className="mt-1 text-xs text-zinc-500">
-            Queue an analysis job when Redis and a Celery worker are running.
+            Redis 和 Celery Worker 启动后，可以加入分析任务。
           </p>
         </div>
       )}
@@ -121,7 +118,7 @@ export function AnalysisJobPanel({ datasetId }: AnalysisJobPanelProps) {
       {jobsQuery.isFetching && !jobsQuery.isLoading ? (
         <div className="mt-3 flex items-center gap-2 text-xs text-zinc-500">
           <RefreshCw className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
-          Refreshing job status
+          正在刷新任务状态
         </div>
       ) : null}
     </section>
@@ -135,7 +132,7 @@ function JobRow({ job }: { job: Job }) {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-sm font-medium text-zinc-100">
-              {job.job_type.replaceAll("_", " ")}
+              {jobTypeLabel(job.job_type)}
             </h3>
             <span
               className={[
@@ -143,7 +140,7 @@ function JobRow({ job }: { job: Job }) {
                 statusClassName[job.status],
               ].join(" ")}
             >
-              {job.status}
+              {jobStatusLabel(job.status)}
             </span>
           </div>
           <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
@@ -160,4 +157,34 @@ function JobRow({ job }: { job: Job }) {
       </div>
     </article>
   );
+}
+
+function jobStatusLabel(status: Job["status"]) {
+  const labels = {
+    queued: "排队中",
+    running: "运行中",
+    succeeded: "成功",
+    failed: "失败",
+    cancelled: "已取消",
+  };
+
+  return labels[status];
+}
+
+function jobTypeLabel(type: string) {
+  const labels: Record<string, string> = {
+    dataset_analysis: "数据集分析",
+  };
+
+  return labels[type] ?? type.replaceAll("_", " ");
+}
+
+async function requireAccessToken(
+  getAccessToken: () => Promise<string | null>,
+) {
+  const accessToken = await getAccessToken();
+  if (!accessToken) {
+    throw new Error("请先登录，再创建后台任务。");
+  }
+  return accessToken;
 }

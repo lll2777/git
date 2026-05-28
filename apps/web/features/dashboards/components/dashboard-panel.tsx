@@ -23,43 +23,40 @@ export function DashboardPanel({
   datasetName,
 }: DashboardPanelProps) {
   const queryClient = useQueryClient();
-  const { session } = useAuth();
+  const { getAccessToken, session } = useAuth();
   const [title, setTitle] = useState("");
-  const accessToken = session?.access_token ?? "";
 
   const defaultTitle = useMemo(
-    () => `${datasetName ?? "Dataset"} dashboard`,
+    () => `${datasetName ?? "数据集"} 仪表盘`,
     [datasetName],
   );
 
   const dashboardsQuery = useQuery({
-    queryKey: ["dataset-dashboards", datasetId, accessToken],
-    queryFn: () =>
+    queryKey: ["dataset-dashboards", datasetId, session?.user.id],
+    queryFn: async () =>
       listDashboards({
-        accessToken,
+        accessToken: await requireAccessToken(getAccessToken),
         datasetId: datasetId ?? "",
       }),
-    enabled: Boolean(accessToken && datasetId),
+    enabled: Boolean(session?.user.id && datasetId),
   });
 
   const saveMutation = useMutation({
-    mutationFn: () =>
+    mutationFn: async () =>
       saveDashboard({
-        accessToken,
+        accessToken: await requireAccessToken(getAccessToken),
         datasetId: datasetId ?? "",
         title: title.trim() || defaultTitle,
       }),
     onSuccess: async () => {
-      toast.success("Dashboard saved.");
+      toast.success("仪表盘已保存。");
       setTitle("");
       await queryClient.invalidateQueries({
         queryKey: ["dataset-dashboards", datasetId],
       });
     },
     onError: (error) => {
-      toast.error(
-        error instanceof Error ? error.message : "Dashboard save failed.",
-      );
+      toast.error(error instanceof Error ? error.message : "仪表盘保存失败。");
     },
   });
 
@@ -74,9 +71,9 @@ export function DashboardPanel({
     <section className="mt-6 border-t border-white/10 pt-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-medium text-zinc-100">Dashboards</p>
+          <p className="text-sm font-medium text-zinc-100">仪表盘</p>
           <p className="mt-1 text-xs text-zinc-500">
-            Save chart and insight outputs as reusable dashboard snapshots.
+            将图表和洞察保存为可复用的分析快照。
           </p>
         </div>
         <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
@@ -89,7 +86,7 @@ export function DashboardPanel({
 
       <div className="mt-4 rounded-3xl border border-white/10 bg-white/[0.03] p-4">
         <label className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-          Dashboard title
+          仪表盘标题
         </label>
         <input
           className="mt-2 h-11 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-white/25"
@@ -109,7 +106,7 @@ export function DashboardPanel({
           ) : (
             <Save className="h-4 w-4" aria-hidden="true" />
           )}
-          Save dashboard
+          保存仪表盘
         </Button>
       </div>
 
@@ -131,10 +128,10 @@ export function DashboardPanel({
             aria-hidden="true"
           />
           <p className="mt-3 text-sm font-medium text-zinc-200">
-            No dashboards saved yet.
+            还没有保存仪表盘。
           </p>
           <p className="mt-1 text-xs text-zinc-500">
-            Save a dashboard after charts or insights are generated.
+            生成图表或洞察后，可以保存仪表盘快照。
           </p>
         </div>
       )}
@@ -151,13 +148,33 @@ function DashboardRow({ dashboard }: { dashboard: DashboardSummary }) {
             {dashboard.title}
           </h3>
           <p className="mt-1 text-xs text-zinc-500">
-            {dashboard.chart_count} charts, {dashboard.insight_count} insights
+            {dashboard.chart_count} 个图表，{dashboard.insight_count} 条洞察
           </p>
         </div>
         <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs text-zinc-500">
-          {dashboard.status}
+          {dashboardStatusLabel(dashboard.status)}
         </span>
       </div>
     </article>
   );
+}
+
+function dashboardStatusLabel(status: string) {
+  const labels: Record<string, string> = {
+    draft: "草稿",
+    active: "可用",
+    archived: "已归档",
+  };
+
+  return labels[status] ?? status;
+}
+
+async function requireAccessToken(
+  getAccessToken: () => Promise<string | null>,
+) {
+  const accessToken = await getAccessToken();
+  if (!accessToken) {
+    throw new Error("请先登录，再保存仪表盘。");
+  }
+  return accessToken;
 }

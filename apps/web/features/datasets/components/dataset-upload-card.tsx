@@ -1,7 +1,14 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { FileSpreadsheet, Loader2, UploadCloud } from "lucide-react";
+import {
+  CheckCircle2,
+  Clock3,
+  FileSpreadsheet,
+  Loader2,
+  TriangleAlert,
+  UploadCloud,
+} from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -36,57 +43,58 @@ const ACCEPTED_MIME_TYPES = [
 export function DatasetUploadCard() {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const queryClient = useQueryClient();
-  const { session, isConfigured, isLoading } = useAuth();
+  const { getAccessToken, session, isConfigured, isLoading } = useAuth();
   const supabase = getSupabaseBrowserClient();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState<string | null>(null);
   const maxUploadSize = Number(getPublicEnv().maxUploadSizeBytes ?? 26_214_400);
 
   const datasetsQuery = useQuery({
-    queryKey: ["datasets", session?.access_token],
-    queryFn: () => listDatasets(session?.access_token ?? ""),
-    enabled: Boolean(session?.access_token),
+    queryKey: ["datasets", session?.user.id],
+    queryFn: async () => listDatasets(await requireAccessToken(getAccessToken)),
+    enabled: Boolean(session?.user.id),
   });
-  const readyDataset = datasetsQuery.data?.datasets.find(
-    (dataset) => dataset.status === "ready",
-  );
+  const datasets = datasetsQuery.data?.datasets ?? [];
+  const latestDataset = datasets[0];
+  const readyDataset = datasets.find((dataset) => dataset.status === "ready");
   const previewQuery = useQuery({
-    queryKey: ["dataset-preview", readyDataset?.id, session?.access_token],
-    queryFn: () =>
+    queryKey: ["dataset-preview", readyDataset?.id, session?.user.id],
+    queryFn: async () =>
       getDatasetPreview({
-        accessToken: session?.access_token ?? "",
+        accessToken: await requireAccessToken(getAccessToken),
         datasetId: readyDataset?.id ?? "",
       }),
-    enabled: Boolean(session?.access_token && readyDataset?.id),
+    enabled: Boolean(session?.user.id && readyDataset?.id),
   });
   const profileQuery = useQuery({
-    queryKey: ["dataset-profile", readyDataset?.id, session?.access_token],
-    queryFn: () =>
+    queryKey: ["dataset-profile", readyDataset?.id, session?.user.id],
+    queryFn: async () =>
       getDatasetProfile({
-        accessToken: session?.access_token ?? "",
+        accessToken: await requireAccessToken(getAccessToken),
         datasetId: readyDataset?.id ?? "",
       }),
-    enabled: Boolean(session?.access_token && readyDataset?.id),
+    enabled: Boolean(session?.user.id && readyDataset?.id),
   });
 
   const uploadMutation = useMutation({
     mutationFn: async (file: File) => {
-      if (!session?.access_token) {
-        throw new Error("Sign in before uploading a dataset.");
+      const accessToken = await getAccessToken();
+      if (!accessToken) {
+        throw new Error("请先登录，再上传数据集。");
       }
       if (!supabase) {
-        throw new Error("Supabase Storage is not configured.");
+        throw new Error("Supabase Storage 尚未配置。");
       }
 
       validateFile(file, maxUploadSize);
 
-      setUploadProgress("Creating upload session");
+      setUploadProgress("正在创建上传会话");
       const uploadSession = await createUploadSession({
-        accessToken: session.access_token,
+        accessToken,
         file,
       });
 
-      setUploadProgress("Uploading to Supabase Storage");
+      setUploadProgress("正在上传到 Supabase Storage");
       const { error } = await supabase.storage
         .from(uploadSession.upload.bucket)
         .upload(uploadSession.upload.path, file, {
@@ -99,21 +107,27 @@ export function DatasetUploadCard() {
         throw error;
       }
 
-      setUploadProgress("Confirming upload");
+      setUploadProgress("正在确认上传结果");
       const dataset = await confirmUpload({
-        accessToken: session.access_token,
+        accessToken: await requireAccessToken(getAccessToken),
         datasetId: uploadSession.dataset.id,
         file,
       });
 
-      setUploadProgress("Parsing and profiling dataset");
+      setUploadProgress("正在解析并分析数据集");
       return analyzeDataset({
-        accessToken: session.access_token,
+        accessToken: await requireAccessToken(getAccessToken),
         datasetId: dataset.id,
       });
     },
-    onSuccess: async () => {
-      toast.success("Dataset uploaded.");
+    onSuccess: async (dataset) => {
+      if (dataset.status === "ready") {
+        toast.success("数据集已解析完成。");
+      } else if (dataset.status === "failed") {
+        toast.error(dataset.error_message || "数据集分析失败。");
+      } else {
+        toast.info(`数据集状态：${datasetStatusLabel(dataset.status)}。`);
+      }
       setSelectedFile(null);
       setUploadProgress(null);
       inputRef.current?.form?.reset();
@@ -121,7 +135,7 @@ export function DatasetUploadCard() {
     },
     onError: (error) => {
       setUploadProgress(null);
-      toast.error(error instanceof Error ? error.message : "Upload failed.");
+      toast.error(error instanceof Error ? error.message : "上传失败。");
     },
   });
 
@@ -131,9 +145,9 @@ export function DatasetUploadCard() {
     <div className="rounded-[28px] border border-white/10 bg-[#111317] p-6 shadow-2xl shadow-black/30">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm text-zinc-400">Dataset upload</p>
+          <p className="text-sm text-zinc-400">数据集上传</p>
           <h2 className="mt-2 text-2xl font-semibold tracking-normal">
-            Upload CSV or Excel
+            上传 CSV 或 Excel
           </h2>
         </div>
         <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
@@ -156,10 +170,10 @@ export function DatasetUploadCard() {
         <label className="flex min-h-36 cursor-pointer flex-col items-center justify-center rounded-3xl border border-dashed border-white/15 bg-white/[0.03] px-4 py-8 text-center transition hover:bg-white/[0.06]">
           <UploadCloud className="h-7 w-7 text-zinc-300" aria-hidden="true" />
           <span className="mt-3 text-sm font-medium text-zinc-100">
-            {selectedFile ? selectedFile.name : "Choose a dataset file"}
+            {selectedFile ? selectedFile.name : "选择数据文件"}
           </span>
           <span className="mt-1 text-xs text-zinc-500">
-            CSV, XLS, or XLSX up to {formatBytes(maxUploadSize)}
+            支持 CSV、XLS、XLSX，最大 {formatBytes(maxUploadSize)}
           </span>
           <input
             ref={inputRef}
@@ -175,11 +189,11 @@ export function DatasetUploadCard() {
         </label>
 
         {!isConfigured ? (
-          <EmptyNotice text="Configure Supabase environment variables before uploading files." />
+          <EmptyNotice text="上传文件前，请先配置 Supabase 环境变量。" />
         ) : null}
 
         {isConfigured && !isLoading && !session ? (
-          <EmptyNotice text="Sign in to upload datasets to your workspace." />
+          <EmptyNotice text="登录后才能把数据集上传到你的工作区。" />
         ) : null}
 
         {uploadProgress ? (
@@ -196,24 +210,24 @@ export function DatasetUploadCard() {
           {uploadMutation.isPending ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-              Uploading
+              上传中
             </>
           ) : (
-            "Upload dataset"
+            "上传数据集"
           )}
         </Button>
       </form>
 
       <div className="mt-6 border-t border-white/10 pt-5">
-        <p className="text-sm font-medium text-zinc-200">Recent datasets</p>
+        <p className="text-sm font-medium text-zinc-200">最近的数据集</p>
         {datasetsQuery.isLoading ? (
           <div className="mt-3 space-y-2">
             <div className="h-10 rounded-2xl bg-white/[0.05]" />
             <div className="h-10 rounded-2xl bg-white/[0.05]" />
           </div>
-        ) : datasetsQuery.data?.datasets.length ? (
+        ) : datasets.length ? (
           <div className="mt-3 space-y-2">
-            {datasetsQuery.data.datasets.slice(0, 3).map((dataset) => (
+            {datasets.slice(0, 3).map((dataset) => (
               <div
                 key={dataset.id}
                 className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3"
@@ -222,17 +236,20 @@ export function DatasetUploadCard() {
                   {dataset.name}
                 </span>
                 <span className="text-xs uppercase tracking-wide text-zinc-500">
-                  {dataset.status}
+                  {datasetStatusLabel(dataset.status)}
                 </span>
               </div>
             ))}
           </div>
         ) : (
-          <p className="mt-3 text-sm text-zinc-500">
-            No datasets uploaded yet.
-          </p>
+          <p className="mt-3 text-sm text-zinc-500">还没有上传数据集。</p>
         )}
       </div>
+
+      <DatasetStatusPanel
+        dataset={latestDataset}
+        isLoading={datasetsQuery.isLoading}
+      />
 
       <DatasetPreviewPanel
         isLoading={previewQuery.isLoading || profileQuery.isLoading}
@@ -256,6 +273,101 @@ export function DatasetUploadCard() {
       <AgentPanel datasetId={readyDataset?.id} />
     </div>
   );
+}
+
+async function requireAccessToken(
+  getAccessToken: () => Promise<string | null>,
+) {
+  const accessToken = await getAccessToken();
+  if (!accessToken) {
+    throw new Error("请先登录，再使用工作区。");
+  }
+  return accessToken;
+}
+
+function DatasetStatusPanel({
+  dataset,
+  isLoading,
+}: {
+  dataset:
+    | {
+        name: string;
+        status: string;
+        row_count: number | null;
+        column_count: number | null;
+        error_message: string | null;
+      }
+    | undefined;
+  isLoading: boolean;
+}) {
+  if (isLoading || !dataset) {
+    return null;
+  }
+
+  const status = getDatasetStatusCopy(dataset);
+  const Icon = status.icon;
+
+  return (
+    <div
+      className={["mt-5 rounded-3xl border p-4", status.className].join(" ")}
+    >
+      <div className="flex items-start gap-3">
+        <Icon className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
+        <div className="min-w-0">
+          <p className="text-sm font-medium">{status.title}</p>
+          <p className="mt-1 text-sm opacity-80">{status.description}</p>
+          {dataset.status === "ready" ? (
+            <p className="mt-2 text-xs opacity-70">
+              {dataset.row_count ?? 0} 行，{dataset.column_count ?? 0} 列
+            </p>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function getDatasetStatusCopy(dataset: {
+  name: string;
+  status: string;
+  error_message: string | null;
+}) {
+  if (dataset.status === "ready") {
+    return {
+      icon: CheckCircle2,
+      title: `${dataset.name} 已就绪`,
+      description: "下方已开放预览、字段画像、图表、洞察和仪表盘工具。",
+      className: "border-emerald-400/20 bg-emerald-400/10 text-emerald-100",
+    };
+  }
+
+  if (dataset.status === "failed") {
+    return {
+      icon: TriangleAlert,
+      title: `${dataset.name} 分析失败`,
+      description:
+        dataset.error_message ||
+        "文件已上传，但解析阶段失败，且后端没有记录到更具体的错误。",
+      className: "border-rose-400/20 bg-rose-400/10 text-rose-100",
+    };
+  }
+
+  if (dataset.status === "uploaded") {
+    return {
+      icon: Clock3,
+      title: `${dataset.name} 已上传`,
+      description:
+        "文件已进入 Supabase Storage，正在等待解析或需要重新触发解析。",
+      className: "border-sky-400/20 bg-sky-400/10 text-sky-100",
+    };
+  }
+
+  return {
+    icon: Clock3,
+    title: `${dataset.name} 上传会话已创建`,
+    description: "上传尚未确认。请重新选择文件并再次上传。",
+    className: "border-amber-400/20 bg-amber-400/10 text-amber-100",
+  };
 }
 
 function DatasetPreviewPanel({
@@ -301,14 +413,14 @@ function DatasetPreviewPanel({
     <div className="mt-6 rounded-3xl border border-white/10 bg-white/[0.03] p-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-sm font-medium text-zinc-100">Parsed preview</p>
+          <p className="text-sm font-medium text-zinc-100">解析预览</p>
           <p className="mt-1 text-xs text-zinc-500">
-            {String(profile.summary.row_count ?? 0)} rows,{" "}
-            {String(profile.summary.column_count ?? 0)} columns
+            {String(profile.summary.row_count ?? 0)} 行，
+            {String(profile.summary.column_count ?? 0)} 列
           </p>
         </div>
         <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs text-emerald-100">
-          Ready
+          已就绪
         </span>
       </div>
 
@@ -373,16 +485,28 @@ function EmptyNotice({ text }: { text: string }) {
 function validateFile(file: File, maxUploadSize: number) {
   const extension = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
   if (!ACCEPTED_EXTENSIONS.includes(extension)) {
-    throw new Error("Only CSV and Excel files are supported.");
+    throw new Error("目前仅支持 CSV 和 Excel 文件。");
   }
 
   if (file.type && !ACCEPTED_MIME_TYPES.includes(file.type)) {
-    throw new Error("Unsupported file content type.");
+    throw new Error("文件内容类型暂不支持。");
   }
 
   if (file.size > maxUploadSize) {
-    throw new Error(`File must be smaller than ${formatBytes(maxUploadSize)}.`);
+    throw new Error(`文件必须小于 ${formatBytes(maxUploadSize)}。`);
   }
+}
+
+function datasetStatusLabel(status: string) {
+  const labels: Record<string, string> = {
+    created: "已创建",
+    uploaded: "已上传",
+    processing: "处理中",
+    ready: "已就绪",
+    failed: "失败",
+  };
+
+  return labels[status] ?? status;
 }
 
 function formatBytes(bytes: number) {

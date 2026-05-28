@@ -33,28 +33,27 @@ const statusClassName = {
 
 export function AgentPanel({ datasetId }: AgentPanelProps) {
   const queryClient = useQueryClient();
-  const { session } = useAuth();
-  const accessToken = session?.access_token ?? "";
+  const { getAccessToken, session } = useAuth();
 
   const runsQuery = useQuery({
-    queryKey: ["dataset-agent-runs", datasetId, accessToken],
-    queryFn: () =>
+    queryKey: ["dataset-agent-runs", datasetId, session?.user.id],
+    queryFn: async () =>
       listAgentRuns({
-        accessToken,
+        accessToken: await requireAccessToken(getAccessToken),
         datasetId: datasetId ?? "",
       }),
-    enabled: Boolean(accessToken && datasetId),
+    enabled: Boolean(session?.user.id && datasetId),
   });
 
   const runMutation = useMutation({
-    mutationFn: () =>
+    mutationFn: async () =>
       runDatasetAgent({
-        accessToken,
+        accessToken: await requireAccessToken(getAccessToken),
         datasetId: datasetId ?? "",
         objective: "prepare_dashboard",
       }),
     onSuccess: async () => {
-      toast.success("Agent workflow completed.");
+      toast.success("智能体工作流已完成。");
       await Promise.all([
         queryClient.invalidateQueries({
           queryKey: ["dataset-agent-runs", datasetId],
@@ -72,7 +71,7 @@ export function AgentPanel({ datasetId }: AgentPanelProps) {
     },
     onError: (error) => {
       toast.error(
-        error instanceof Error ? error.message : "Agent workflow failed.",
+        error instanceof Error ? error.message : "智能体工作流失败。",
       );
     },
   });
@@ -88,9 +87,9 @@ export function AgentPanel({ datasetId }: AgentPanelProps) {
     <section className="mt-6 border-t border-white/10 pt-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm font-medium text-zinc-100">AI Agent</p>
+          <p className="text-sm font-medium text-zinc-100">AI 智能体</p>
           <p className="mt-1 text-xs text-zinc-500">
-            Run a controlled workflow across charts, insights, and dashboards.
+            自动串联图表、洞察和仪表盘的受控分析流程。
           </p>
         </div>
         <Button
@@ -104,7 +103,7 @@ export function AgentPanel({ datasetId }: AgentPanelProps) {
           ) : (
             <Play className="h-4 w-4" aria-hidden="true" />
           )}
-          Run agent
+          运行智能体
         </Button>
       </div>
 
@@ -120,10 +119,10 @@ export function AgentPanel({ datasetId }: AgentPanelProps) {
         <div className="mt-4 flex min-h-36 flex-col items-center justify-center rounded-3xl border border-dashed border-white/15 bg-white/[0.03] px-4 text-center">
           <Bot className="h-6 w-6 text-zinc-400" aria-hidden="true" />
           <p className="mt-3 text-sm font-medium text-zinc-200">
-            No agent runs yet.
+            还没有智能体运行记录。
           </p>
           <p className="mt-1 text-xs text-zinc-500">
-            Run the agent after the dataset profile is ready.
+            数据画像就绪后，可以运行智能体流程。
           </p>
         </div>
       )}
@@ -139,11 +138,11 @@ function AgentRunCard({ run }: { run: AgentRun }) {
           <div className="flex items-center gap-2">
             <Workflow className="h-4 w-4 text-zinc-400" aria-hidden="true" />
             <h3 className="truncate text-sm font-medium text-zinc-100">
-              {run.objective.replaceAll("_", " ")}
+              {objectiveLabel(run.objective)}
             </h3>
           </div>
           <p className="mt-1 text-xs text-zinc-500">
-            {run.steps.length} audited steps
+            {run.steps.length} 个已审计步骤
           </p>
         </div>
         <StatusBadge status={run.status} />
@@ -170,7 +169,7 @@ function AgentRunCard({ run }: { run: AgentRun }) {
                 />
               )}
               <span className="truncate text-xs text-zinc-300">
-                {step.step_name.replaceAll("_", " ")}
+                {stepLabel(step.step_name)}
               </span>
             </div>
             <StatusBadge status={step.status} />
@@ -193,7 +192,47 @@ function StatusBadge({ status }: { status: keyof typeof statusClassName }) {
         statusClassName[status],
       ].join(" ")}
     >
-      {status}
+      {agentStatusLabel(status)}
     </span>
   );
+}
+
+function agentStatusLabel(status: keyof typeof statusClassName) {
+  const labels = {
+    running: "运行中",
+    succeeded: "成功",
+    failed: "失败",
+    cancelled: "已取消",
+    skipped: "已跳过",
+  };
+
+  return labels[status];
+}
+
+function objectiveLabel(objective: string) {
+  const labels: Record<string, string> = {
+    prepare_dashboard: "准备仪表盘",
+  };
+
+  return labels[objective] ?? objective.replaceAll("_", " ");
+}
+
+function stepLabel(stepName: string) {
+  const labels: Record<string, string> = {
+    ensure_charts: "生成或确认图表",
+    generate_insights: "生成业务洞察",
+    save_dashboard: "保存仪表盘",
+  };
+
+  return labels[stepName] ?? stepName.replaceAll("_", " ");
+}
+
+async function requireAccessToken(
+  getAccessToken: () => Promise<string | null>,
+) {
+  const accessToken = await getAccessToken();
+  if (!accessToken) {
+    throw new Error("请先登录，再运行智能体。");
+  }
+  return accessToken;
 }

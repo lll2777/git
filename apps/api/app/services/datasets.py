@@ -160,7 +160,8 @@ class DatasetService:
             )
             raise
         except Exception as exc:
-            failed = self.repository.mark_failed(dataset_id=dataset_id, error_message=str(exc))
+            message = str(exc) or exc.__class__.__name__
+            failed = self.repository.mark_failed(dataset_id=dataset_id, error_message=message)
             if failed is not None:
                 return failed
             raise

@@ -31,35 +31,32 @@ type ChartRecommendationsProps = {
 
 export function ChartRecommendations({ datasetId }: ChartRecommendationsProps) {
   const queryClient = useQueryClient();
-  const { session } = useAuth();
-  const accessToken = session?.access_token ?? "";
+  const { getAccessToken, session } = useAuth();
 
   const chartsQuery = useQuery({
-    queryKey: ["dataset-charts", datasetId, accessToken],
-    queryFn: () =>
+    queryKey: ["dataset-charts", datasetId, session?.user.id],
+    queryFn: async () =>
       listCharts({
-        accessToken,
+        accessToken: await requireAccessToken(getAccessToken),
         datasetId: datasetId ?? "",
       }),
-    enabled: Boolean(accessToken && datasetId),
+    enabled: Boolean(session?.user.id && datasetId),
   });
 
   const recommendMutation = useMutation({
-    mutationFn: () =>
+    mutationFn: async () =>
       recommendCharts({
-        accessToken,
+        accessToken: await requireAccessToken(getAccessToken),
         datasetId: datasetId ?? "",
       }),
     onSuccess: async () => {
-      toast.success("Charts generated.");
+      toast.success("图表已生成。");
       await queryClient.invalidateQueries({
         queryKey: ["dataset-charts", datasetId],
       });
     },
     onError: (error) => {
-      toast.error(
-        error instanceof Error ? error.message : "Chart recommendation failed.",
-      );
+      toast.error(error instanceof Error ? error.message : "图表推荐失败。");
     },
   });
 
@@ -74,11 +71,9 @@ export function ChartRecommendations({ datasetId }: ChartRecommendationsProps) {
     <section className="mt-6 border-t border-white/10 pt-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm font-medium text-zinc-100">
-            Recommended charts
-          </p>
+          <p className="text-sm font-medium text-zinc-100">推荐图表</p>
           <p className="mt-1 text-xs text-zinc-500">
-            Deterministic recommendations based on detected field types.
+            基于字段类型识别结果，生成可解释的图表建议。
           </p>
         </div>
         <Button
@@ -92,7 +87,7 @@ export function ChartRecommendations({ datasetId }: ChartRecommendationsProps) {
           ) : (
             <Sparkles className="h-4 w-4" aria-hidden="true" />
           )}
-          Generate charts
+          生成图表
         </Button>
       </div>
 
@@ -108,10 +103,10 @@ export function ChartRecommendations({ datasetId }: ChartRecommendationsProps) {
         <div className="mt-4 flex min-h-44 flex-col items-center justify-center rounded-3xl border border-dashed border-white/15 bg-white/[0.03] px-4 text-center">
           <BarChart3 className="h-6 w-6 text-zinc-400" aria-hidden="true" />
           <p className="mt-3 text-sm font-medium text-zinc-200">
-            No chart recommendations yet.
+            还没有图表建议。
           </p>
           <p className="mt-1 text-xs text-zinc-500">
-            Generate chart candidates after the dataset profile is ready.
+            数据画像完成后，可以生成候选图表。
           </p>
         </div>
       )}
@@ -147,7 +142,7 @@ function ChartCard({ chart }: { chart: Chart }) {
         </div>
       ) : (
         <div className="mt-4 flex h-60 items-center justify-center rounded-2xl bg-white/[0.03] text-sm text-zinc-500">
-          No renderable data
+          暂无可渲染数据
         </div>
       )}
     </article>
@@ -218,3 +213,13 @@ const tooltipStyle = {
   borderRadius: "16px",
   color: "#f4f4f5",
 };
+
+async function requireAccessToken(
+  getAccessToken: () => Promise<string | null>,
+) {
+  const accessToken = await getAccessToken();
+  if (!accessToken) {
+    throw new Error("请先登录，再使用图表功能。");
+  }
+  return accessToken;
+}

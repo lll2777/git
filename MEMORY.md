@@ -203,6 +203,29 @@
     JWKS first and legacy `SUPABASE_JWT_SECRET` fallback second, but the real
     browser request still returned 401. Next session should continue from JWT
     diagnostics for the real Supabase browser token, not from DB/storage setup.
+  - Follow-up upload diagnostics found the intermittent 401 was most likely caused
+    by frontend components reusing `session.access_token` instead of asking
+    Supabase for the latest session before API calls.
+  - Added `getAccessToken()` to the frontend auth provider and changed upload,
+    dataset listing, preview/profile, charts, insights, AI Q&A, dashboards, jobs,
+    and agent calls to fetch a fresh token immediately before protected API calls.
+  - Improved API error messages in the frontend so 401/503 and other common status
+    codes show actionable Chinese messages instead of raw English status text.
+  - Added a latest dataset status panel so successful uploads, pending parsing,
+    and failed analyses all produce visible feedback instead of only ready datasets
+    rendering downstream panels.
+  - Updated backend dataset analysis failure handling so unexpected exceptions save
+    a non-empty error message on failed dataset rows.
+  - User clarified the website UI should be Chinese. Frontend metadata, landing
+    page, auth pages, upload flow, dataset status, charts, AI Q&A, insights,
+    dashboards, jobs, and agent panels were translated to Chinese while preserving
+    API enums and code identifiers.
+  - Browser verification confirmed `http://localhost:3000/` renders the Chinese
+    title and core upload copy.
+  - User has not filled the large-model API key yet. This does not block upload,
+    parsing, deterministic chart recommendations, or dashboard persistence, but
+    AI Q&A, AI insights, and AI agent AI-backed steps may fail or degrade until
+    `MIMO_API_KEY` and related model environment variables are configured.
   - Do not expose or commit local secrets. Local ignored files now include root
     `.env` and `apps/web/.env.local`.
 

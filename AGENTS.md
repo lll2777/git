@@ -122,3 +122,10 @@ startup project and a portfolio-grade full-stack system.
   `scripts/apply_supabase_storage_policies.py`.
 - The original 12-step roadmap is complete. Next work should harden production:
   tests, CI, billing, RBAC, sharing, and real provider credentials.
+- The web UI should be Chinese. Keep new user-facing frontend copy in Chinese.
+- Frontend protected API calls should fetch a fresh Supabase access token through
+  `getAccessToken()` before each request instead of reusing a possibly stale
+  `session.access_token`.
+- The user has not configured the large-model API key yet. Upload, parsing,
+  deterministic charts, and dashboard persistence can still be tested; AI Q&A,
+  AI insights, and AI Agent model-backed behavior need `MIMO_API_KEY` later.

@@ -25,35 +25,32 @@ const severityClassName = {
 
 export function InsightPanel({ datasetId }: InsightPanelProps) {
   const queryClient = useQueryClient();
-  const { session } = useAuth();
-  const accessToken = session?.access_token ?? "";
+  const { getAccessToken, session } = useAuth();
 
   const insightsQuery = useQuery({
-    queryKey: ["dataset-insights", datasetId, accessToken],
-    queryFn: () =>
+    queryKey: ["dataset-insights", datasetId, session?.user.id],
+    queryFn: async () =>
       listInsights({
-        accessToken,
+        accessToken: await requireAccessToken(getAccessToken),
         datasetId: datasetId ?? "",
       }),
-    enabled: Boolean(accessToken && datasetId),
+    enabled: Boolean(session?.user.id && datasetId),
   });
 
   const generateMutation = useMutation({
-    mutationFn: () =>
+    mutationFn: async () =>
       generateInsights({
-        accessToken,
+        accessToken: await requireAccessToken(getAccessToken),
         datasetId: datasetId ?? "",
       }),
     onSuccess: async () => {
-      toast.success("Insights generated.");
+      toast.success("洞察已生成。");
       await queryClient.invalidateQueries({
         queryKey: ["dataset-insights", datasetId],
       });
     },
     onError: (error) => {
-      toast.error(
-        error instanceof Error ? error.message : "Insight generation failed.",
-      );
+      toast.error(error instanceof Error ? error.message : "洞察生成失败。");
     },
   });
 
@@ -68,9 +65,9 @@ export function InsightPanel({ datasetId }: InsightPanelProps) {
     <section className="mt-6 border-t border-white/10 pt-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm font-medium text-zinc-100">Business insights</p>
+          <p className="text-sm font-medium text-zinc-100">业务洞察</p>
           <p className="mt-1 text-xs text-zinc-500">
-            Deterministic analysis plus AI-generated business interpretation.
+            结合确定性分析与 AI 解释，生成业务可读结论。
           </p>
         </div>
         <Button
@@ -84,7 +81,7 @@ export function InsightPanel({ datasetId }: InsightPanelProps) {
           ) : (
             <Sparkles className="h-4 w-4" aria-hidden="true" />
           )}
-          Generate insights
+          生成洞察
         </Button>
       </div>
 
@@ -103,10 +100,10 @@ export function InsightPanel({ datasetId }: InsightPanelProps) {
         <div className="mt-4 flex min-h-44 flex-col items-center justify-center rounded-3xl border border-dashed border-white/15 bg-white/[0.03] px-4 text-center">
           <Lightbulb className="h-6 w-6 text-zinc-400" aria-hidden="true" />
           <p className="mt-3 text-sm font-medium text-zinc-200">
-            No insights generated yet.
+            还没有生成洞察。
           </p>
           <p className="mt-1 text-xs text-zinc-500">
-            Generate insights after parsing and chart recommendation.
+            完成解析和图表推荐后，可以生成业务洞察。
           </p>
         </div>
       )}
@@ -134,7 +131,7 @@ function InsightCard({ insight }: { insight: Insight }) {
                 severityClassName[insight.severity],
               ].join(" ")}
             >
-              {insight.severity}
+              {severityLabel(insight.severity)}
             </span>
           </div>
           <p className="mt-2 text-sm leading-6 text-zinc-400">
@@ -142,10 +139,10 @@ function InsightCard({ insight }: { insight: Insight }) {
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs text-zinc-500">
-              {insight.insight_type}
+              {insightTypeLabel(insight.insight_type)}
             </span>
             <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs text-zinc-500">
-              {insight.source}
+              {sourceLabel(insight.source)}
             </span>
             {insight.provider ? (
               <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs text-zinc-500">
@@ -157,4 +154,47 @@ function InsightCard({ insight }: { insight: Insight }) {
       </div>
     </article>
   );
+}
+
+function severityLabel(severity: Insight["severity"]) {
+  const labels = {
+    info: "信息",
+    low: "低",
+    medium: "中",
+    high: "高",
+  };
+
+  return labels[severity];
+}
+
+function insightTypeLabel(type: string) {
+  const labels: Record<string, string> = {
+    summary: "摘要",
+    warning: "风险",
+    trend: "趋势",
+    anomaly: "异常",
+    correlation: "相关性",
+    opportunity: "机会",
+  };
+
+  return labels[type] ?? type;
+}
+
+function sourceLabel(source: string) {
+  const labels: Record<string, string> = {
+    deterministic: "规则分析",
+    ai: "AI 生成",
+  };
+
+  return labels[source] ?? source;
+}
+
+async function requireAccessToken(
+  getAccessToken: () => Promise<string | null>,
+) {
+  const accessToken = await getAccessToken();
+  if (!accessToken) {
+    throw new Error("请先登录，再生成洞察。");
+  }
+  return accessToken;
 }

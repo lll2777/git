@@ -17,6 +17,7 @@ type AuthContextValue = {
   session: Session | null;
   isLoading: boolean;
   isConfigured: boolean;
+  getAccessToken: () => Promise<string | null>;
   refreshSession: () => Promise<void>;
   signOut: () => Promise<void>;
 };
@@ -39,6 +40,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data } = await supabase.auth.getSession();
     setSession(data.session);
     setIsLoading(false);
+  }, [supabase]);
+
+  const getAccessToken = useCallback(async () => {
+    if (!supabase) {
+      setSession(null);
+      return null;
+    }
+
+    const { data, error } = await supabase.auth.getSession();
+    if (error) {
+      setSession(null);
+      return null;
+    }
+
+    setSession(data.session);
+    return data.session?.access_token ?? null;
   }, [supabase]);
 
   const signOut = useCallback(async () => {
@@ -87,10 +104,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       session,
       isLoading,
       isConfigured: Boolean(supabase),
+      getAccessToken,
       refreshSession,
       signOut,
     }),
-    [isLoading, refreshSession, session, signOut, supabase],
+    [getAccessToken, isLoading, refreshSession, session, signOut, supabase],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

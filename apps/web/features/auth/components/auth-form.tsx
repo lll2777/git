@@ -24,7 +24,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
     event.preventDefault();
 
     if (!supabase) {
-      toast.error("Supabase environment variables are not configured.");
+      toast.error("Supabase 环境变量尚未配置。");
       return;
     }
 
@@ -45,10 +45,10 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
 
         if (data.session?.access_token) {
           await tryBootstrap(data.session.access_token);
-          toast.success("Account created.");
+          toast.success("账号创建成功。");
           router.push("/");
         } else {
-          toast.success("Check your email to confirm your account.");
+          toast.success("请打开邮箱完成账号确认。");
         }
         return;
       }
@@ -66,12 +66,11 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
         await tryBootstrap(data.session.access_token);
       }
 
-      toast.success("Signed in.");
+      toast.success("登录成功。");
       router.push("/");
       router.refresh();
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Authentication failed.";
+      const message = error instanceof Error ? error.message : "认证失败。";
       toast.error(message);
     } finally {
       setIsSubmitting(false);
@@ -82,31 +81,29 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
     try {
       await bootstrapCurrentUser(accessToken);
     } catch {
-      toast.warning(
-        "Signed in, but workspace setup is waiting for the API database.",
-      );
+      toast.warning("已登录，但工作区初始化仍在等待 API 数据库可用。");
     }
   }
 
   return (
     <div className="w-full max-w-md rounded-[28px] border border-white/10 bg-[#111317] p-6 shadow-2xl shadow-black/30">
       <div>
-        <p className="text-sm text-zinc-400">AI Data Analysis</p>
+        <p className="text-sm text-zinc-400">AI 数据分析</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-normal">
-          {isRegister ? "Create account" : "Sign in"}
+          {isRegister ? "创建账号" : "登录"}
         </h1>
       </div>
 
       {!supabase ? (
         <div className="mt-6 rounded-2xl border border-amber-400/20 bg-amber-400/10 p-4 text-sm text-amber-100">
-          Configure `NEXT_PUBLIC_SUPABASE_URL` and
-          `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` before using authentication.
+          使用认证前，请先配置 `NEXT_PUBLIC_SUPABASE_URL` 和
+          `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`。
         </div>
       ) : null}
 
       <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
         <label className="block space-y-2">
-          <span className="text-sm text-zinc-300">Email</span>
+          <span className="text-sm text-zinc-300">邮箱</span>
           <input
             className="h-11 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-sm text-white outline-none transition focus:border-white/30"
             type="email"
@@ -118,7 +115,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
         </label>
 
         <label className="block space-y-2">
-          <span className="text-sm text-zinc-300">Password</span>
+          <span className="text-sm text-zinc-300">密码</span>
           <input
             className="h-11 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-sm text-white outline-none transition focus:border-white/30"
             type="password"
@@ -135,21 +132,17 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
           disabled={isSubmitting || !supabase}
           type="submit"
         >
-          {isSubmitting
-            ? "Working..."
-            : isRegister
-              ? "Create account"
-              : "Sign in"}
+          {isSubmitting ? "处理中..." : isRegister ? "创建账号" : "登录"}
         </Button>
       </form>
 
       <p className="mt-5 text-sm text-zinc-400">
-        {isRegister ? "Already have an account?" : "New here?"}{" "}
+        {isRegister ? "已经有账号了？" : "还没有账号？"}{" "}
         <Link
           className="text-white underline-offset-4 hover:underline"
           href={isRegister ? "/login" : "/register"}
         >
-          {isRegister ? "Sign in" : "Create account"}
+          {isRegister ? "登录" : "创建账号"}
         </Link>
       </p>
     </div>

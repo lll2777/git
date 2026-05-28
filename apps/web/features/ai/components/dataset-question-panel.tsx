@@ -17,16 +17,15 @@ type DatasetQuestionPanelProps = {
 };
 
 export function DatasetQuestionPanel({ datasetId }: DatasetQuestionPanelProps) {
-  const { session } = useAuth();
+  const { getAccessToken, session } = useAuth();
   const [question, setQuestion] = useState("");
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<AIMessage[]>([]);
-  const accessToken = session?.access_token ?? "";
 
   const askMutation = useMutation({
-    mutationFn: (nextQuestion: string) =>
+    mutationFn: async (nextQuestion: string) =>
       askDatasetQuestion({
-        accessToken,
+        accessToken: await requireAccessToken(getAccessToken),
         datasetId: datasetId ?? "",
         question: nextQuestion,
         conversationId,
@@ -35,12 +34,10 @@ export function DatasetQuestionPanel({ datasetId }: DatasetQuestionPanelProps) {
       setConversationId(response.conversation.id);
       setMessages(response.messages);
       setQuestion("");
-      toast.success("Answer generated.");
+      toast.success("回答已生成。");
     },
     onError: (error) => {
-      toast.error(
-        error instanceof Error ? error.message : "AI question failed.",
-      );
+      toast.error(error instanceof Error ? error.message : "AI 问答失败。");
     },
   });
 
@@ -48,15 +45,15 @@ export function DatasetQuestionPanel({ datasetId }: DatasetQuestionPanelProps) {
     return null;
   }
 
-  const disabled = !accessToken || askMutation.isPending;
+  const disabled = !session?.user.id || askMutation.isPending;
 
   return (
     <section className="mt-6 border-t border-white/10 pt-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-medium text-zinc-100">AI data Q&A</p>
+          <p className="text-sm font-medium text-zinc-100">AI 数据问答</p>
           <p className="mt-1 text-xs text-zinc-500">
-            Ask questions grounded in the parsed dataset profile and charts.
+            基于已解析的数据画像和图表上下文提问。
           </p>
         </div>
         <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
@@ -73,11 +70,10 @@ export function DatasetQuestionPanel({ datasetId }: DatasetQuestionPanelProps) {
           <div className="flex min-h-40 flex-col items-center justify-center text-center">
             <Bot className="h-6 w-6 text-zinc-400" aria-hidden="true" />
             <p className="mt-3 text-sm font-medium text-zinc-200">
-              No questions yet.
+              还没有提问。
             </p>
             <p className="mt-1 max-w-sm text-xs text-zinc-500">
-              Try asking for trends, anomalies, missing data, correlations, or a
-              short business summary.
+              可以询问趋势、异常、缺失值、相关性，或让 AI 写一段业务摘要。
             </p>
           </div>
         )}
@@ -85,7 +81,7 @@ export function DatasetQuestionPanel({ datasetId }: DatasetQuestionPanelProps) {
         {askMutation.isPending ? (
           <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-zinc-400">
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-            Analyzing dataset context
+            正在分析数据上下文
           </div>
         ) : null}
       </div>
@@ -105,7 +101,7 @@ export function DatasetQuestionPanel({ datasetId }: DatasetQuestionPanelProps) {
           disabled={disabled}
           maxLength={4000}
           onChange={(event) => setQuestion(event.target.value)}
-          placeholder="Ask about revenue trends, missing values, outliers, or what the charts imply..."
+          placeholder="询问收入趋势、缺失值、异常点，或这些图表说明了什么..."
           value={question}
         />
         <Button
@@ -118,11 +114,21 @@ export function DatasetQuestionPanel({ datasetId }: DatasetQuestionPanelProps) {
           ) : (
             <SendHorizontal className="h-4 w-4" aria-hidden="true" />
           )}
-          Ask AI
+          向 AI 提问
         </Button>
       </form>
     </section>
   );
+}
+
+async function requireAccessToken(
+  getAccessToken: () => Promise<string | null>,
+) {
+  const accessToken = await getAccessToken();
+  if (!accessToken) {
+    throw new Error("请先登录，再向 AI 提问。");
+  }
+  return accessToken;
 }
 
 function MessageBubble({ message }: { message: AIMessage }) {
@@ -148,7 +154,7 @@ function MessageBubble({ message }: { message: AIMessage }) {
       />
       <div className="min-w-0 flex-1">
         <p className="text-xs uppercase tracking-wide text-zinc-500">
-          {isUser ? "You" : (message.provider ?? "AI")}
+          {isUser ? "你" : (message.provider ?? "AI")}
         </p>
         <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-6 text-zinc-200">
           {message.content}
