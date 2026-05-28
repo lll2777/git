@@ -77,6 +77,7 @@ Run migrations before starting production traffic:
 
 ```bash
 python scripts/apply_postgres_migrations.py
+python scripts/apply_supabase_storage_policies.py
 ```
 
 The script:

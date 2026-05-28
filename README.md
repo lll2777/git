@@ -71,6 +71,7 @@ Use `samples/sales-demo.csv` for the first manual upload test.
 python scripts/check_env.py --file .env.example --profile development --allow-placeholders
 python scripts/check_env.py --file .env.production.example --profile production --allow-placeholders
 conda run -n pytorch python scripts/smoke_api.py --local-testclient
+conda run -n pytorch python scripts/apply_supabase_storage_policies.py
 npm run format:check
 npm run lint
 npm run build

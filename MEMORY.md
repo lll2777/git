@@ -165,6 +165,16 @@
     for user `postgres`. The local `DATABASE_URL` parsed as a Supabase direct
     connection, but the password segment still looked like a placeholder rather
     than the real database password.
+  - User corrected the local Supabase database password in `.env`.
+  - `scripts/apply_postgres_migrations.py` successfully applied migrations
+    `001_auth.sql` through `009_agent_runs.sql` against Supabase Postgres.
+  - Added idempotent `scripts/apply_supabase_storage_policies.py`.
+  - Updated `infra/supabase/storage-policies.sql` so repeated runs drop and
+    recreate the four dataset object policies safely.
+  - Supabase Storage bucket/policy application completed successfully and was
+    verified by rerunning the policy script.
+  - Restarted local backend and frontend again. Backend health and frontend HTTP
+    checks passed after database and storage setup.
 
 ## Architecture Decisions
 

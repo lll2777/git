@@ -32,6 +32,7 @@
 ```bash
 python scripts/check_env.py --file .env --profile development
 conda run -n pytorch python scripts/smoke_api.py --local-testclient
+conda run -n pytorch python scripts/apply_supabase_storage_policies.py
 npm run format:check
 npm run lint
 npm run build
@@ -41,7 +42,8 @@ conda run -n pytorch python -m compileall apps/api/app scripts
 ## Manual End-to-End Checklist
 
 1. Apply migrations with `python scripts/apply_postgres_migrations.py`.
-2. Apply Supabase storage policies from `infra/supabase/storage-policies.sql`.
+2. Apply Supabase storage policies with
+   `python scripts/apply_supabase_storage_policies.py`.
 3. Start API with `conda activate pytorch` then `uvicorn app.main:app --reload`.
 4. Start frontend with `npm run dev`.
 5. Sign up or sign in.

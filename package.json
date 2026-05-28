@@ -13,6 +13,7 @@
     "lint": "npm run lint --workspace @ai-data-analysis/web",
     "check:env": "python scripts/check_env.py --file .env --profile development",
     "smoke:api": "conda run -n pytorch python scripts/smoke_api.py --local-testclient",
+    "storage:policies": "conda run -n pytorch python scripts/apply_supabase_storage_policies.py",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky"

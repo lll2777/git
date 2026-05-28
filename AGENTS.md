@@ -104,6 +104,8 @@ startup project and a portfolio-grade full-stack system.
 - Production readiness tooling is being added: GitHub Actions CI, environment
   validation, API smoke checks, sample data, and a top-level README suitable for
   portfolio review.
+- Local Supabase Postgres migrations and Storage policies have been applied once
+  with the user's local credentials. Do not record or expose secrets.
 - Architecture documentation lives in `docs/step-01-architecture.md`.
 - Initialization documentation lives in `docs/step-02-initialization.md`.
 - Authentication documentation lives in `docs/step-03-authentication.md`.
@@ -116,5 +118,7 @@ startup project and a portfolio-grade full-stack system.
 - Async task documentation lives in `docs/step-10-async-tasks.md`.
 - AI Agent documentation lives in `docs/step-11-ai-agent.md`.
 - Deployment documentation lives in `docs/step-12-deployment.md`.
+- Supabase Storage policies can be reapplied idempotently with
+  `scripts/apply_supabase_storage_policies.py`.
 - The original 12-step roadmap is complete. Next work should harden production:
   tests, CI, billing, RBAC, sharing, and real provider credentials.

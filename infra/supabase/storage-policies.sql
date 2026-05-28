@@ -2,6 +2,18 @@ insert into storage.buckets (id, name, public)
 values ('datasets', 'datasets', false)
 on conflict (id) do nothing;
 
+drop policy if exists "Authenticated users can upload their dataset files"
+on storage.objects;
+
+drop policy if exists "Authenticated users can read their dataset files"
+on storage.objects;
+
+drop policy if exists "Authenticated users can update their dataset files"
+on storage.objects;
+
+drop policy if exists "Authenticated users can delete their dataset files"
+on storage.objects;
+
 create policy "Authenticated users can upload their dataset files"
 on storage.objects
 for insert
