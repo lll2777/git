@@ -33,9 +33,12 @@ class Settings(BaseSettings):
     max_upload_size_bytes: int = Field(default=26_214_400, alias="MAX_UPLOAD_SIZE_BYTES")
 
     ai_provider: str = Field(default="mimo", alias="AI_PROVIDER")
-    mimo_base_url: str = Field(default="https://api.xiaomimimo.com/v1", alias="MIMO_BASE_URL")
+    mimo_base_url: str = Field(
+        default="https://token-plan-cn.xiaomimimo.com/v1",
+        alias="MIMO_BASE_URL",
+    )
     mimo_api_key: str | None = Field(default=None, alias="MIMO_API_KEY")
-    mimo_model: str = Field(default="mimo-v2-flash", alias="MIMO_MODEL")
+    mimo_model: str = Field(default="mimo-v2.5", alias="MIMO_MODEL")
 
     openai_api_key: str | None = Field(default=None, alias="OPENAI_API_KEY")
     openai_model: str = Field(default="gpt-4.1-mini", alias="OPENAI_MODEL")

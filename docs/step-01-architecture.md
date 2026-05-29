@@ -123,7 +123,7 @@ Initial implementation:
 
 - `MimoProvider`
 - Provider selected with `AI_PROVIDER=mimo`
-- Default model selected with `MIMO_MODEL=mimo-v2-flash`
+- Default model selected with `MIMO_MODEL=mimo-v2.5`
 
 Reserved implementations:
 
@@ -556,8 +556,9 @@ SUPABASE_STORAGE_BUCKET=datasets
 
 AI_PROVIDER=mimo
 
+MIMO_BASE_URL=https://token-plan-cn.xiaomimimo.com/v1
 MIMO_API_KEY=
-MIMO_MODEL=mimo-v2-flash
+MIMO_MODEL=mimo-v2.5
 
 OPENAI_API_KEY=
 OPENAI_MODEL=gpt-4.1-mini

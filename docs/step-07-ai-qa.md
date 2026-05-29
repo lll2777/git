@@ -38,6 +38,21 @@ produced both a profile and preview.
 - base URL from `MIMO_BASE_URL`.
 - API key from `MIMO_API_KEY`.
 - model from `MIMO_MODEL`.
+
+For the user's current MiMo subscription, use the OpenAI-compatible token-plan
+endpoint:
+
+```env
+MIMO_BASE_URL=https://token-plan-cn.xiaomimimo.com/v1
+MIMO_MODEL=mimo-v2.5
+```
+
+Before testing through the browser, run:
+
+```powershell
+conda run -n pytorch python scripts/test_mimo_provider.py
+```
+
 - tools are passed through as function-calling tool definitions.
 
 If `MIMO_API_KEY` is missing, the provider returns a safe explanatory response so

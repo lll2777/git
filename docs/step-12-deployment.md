@@ -57,9 +57,9 @@ Backend:
 - `SUPABASE_JWT_SECRET`
 - `SUPABASE_STORAGE_BUCKET=datasets`
 - `AI_PROVIDER=mimo`
-- `MIMO_BASE_URL=https://api.xiaomimimo.com/v1`
+- `MIMO_BASE_URL=https://token-plan-cn.xiaomimimo.com/v1`
 - `MIMO_API_KEY`
-- `MIMO_MODEL=mimo-v2-flash`
+- `MIMO_MODEL=mimo-v2.5`
 
 Frontend:
 

@@ -299,6 +299,12 @@
       ready dataset.
     - Failed or uploaded datasets show a clear locked analysis notice and a
       "重新分析" action where the backend supports rerunning analysis.
+  - User shared current MiMo subscription details. Defaults were aligned to the
+    OpenAI-compatible subscription endpoint and available model list:
+    - `MIMO_BASE_URL=https://token-plan-cn.xiaomimimo.com/v1`
+    - `MIMO_MODEL=mimo-v2.5`
+    - Added `scripts/test_mimo_provider.py` for live connectivity checks after
+      the user fills `MIMO_API_KEY` locally.
   - Do not expose or commit local secrets. Local ignored files now include root
     `.env` and `apps/web/.env.local`.
 
@@ -316,7 +322,7 @@
   - `aiService` calls provider adapters.
 - Default AI provider is Mimo:
   - `AI_PROVIDER=mimo`
-  - `MIMO_BASE_URL=https://api.xiaomimimo.com/v1`
-  - `MIMO_MODEL=mimo-v2-flash`
+  - `MIMO_BASE_URL=https://token-plan-cn.xiaomimimo.com/v1`
+  - `MIMO_MODEL=mimo-v2.5`
 - Initial deterministic analysis should use pandas and numpy before invoking AI.
 - Redis and Celery will handle long-running analysis and AI jobs.

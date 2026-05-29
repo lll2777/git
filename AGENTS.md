@@ -41,7 +41,7 @@ startup project and a portfolio-grade full-stack system.
 - Auth: Supabase Auth.
 - Storage: Supabase Storage.
 - AI: Provider Adapter architecture. Default provider is Mimo with model
-  `mimo-v2-flash`.
+  `mimo-v2.5`.
 - Charts: Recharts first, ECharts later.
 - Async: Redis and Celery.
 - Deploy: Vercel for frontend, Railway or Render for backend.
@@ -152,3 +152,8 @@ startup project and a portfolio-grade full-stack system.
 - The user has not configured the large-model API key yet. Upload, parsing,
   deterministic charts, and dashboard persistence can still be tested; AI Q&A,
   AI insights, and AI Agent model-backed behavior need `MIMO_API_KEY` later.
+- User's current MiMo subscription shows the OpenAI-compatible base URL
+  `https://token-plan-cn.xiaomimimo.com/v1` and available models including
+  `mimo-v2.5` and `MIMO-v2.5-pro`; use `mimo-v2.5` as the default local model.
+  Test live connectivity with `conda run -n pytorch python scripts/test_mimo_provider.py`
+  after the user adds `MIMO_API_KEY` to `.env`.
