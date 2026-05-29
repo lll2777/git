@@ -305,6 +305,11 @@
     - `MIMO_MODEL=mimo-v2.5`
     - Added `scripts/test_mimo_provider.py` for live connectivity checks after
       the user fills `MIMO_API_KEY` locally.
+  - User filled the local `.env` MiMo settings. The key was verified only in
+    masked form, with prefix `tp-css...` and suffix `7w1b`; do not print or commit
+    the full key. The backend was restarted in the `pytorch` environment, health
+    check passed at `/api/v1/health`, and `scripts/test_mimo_provider.py` returned
+    `mimo provider ok` against `mimo-v2.5`.
   - Do not expose or commit local secrets. Local ignored files now include root
     `.env` and `apps/web/.env.local`.
 
