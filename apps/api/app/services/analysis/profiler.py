@@ -46,7 +46,7 @@ class DatasetProfiler:
             summary={
                 "row_count": row_count,
                 "column_count": column_count,
-                "numeric_column_count": len(dataframe.select_dtypes(include=["number"]).columns),
+                "numeric_column_count": len(analysis_numeric_dataframe(dataframe).columns),
                 "datetime_column_count": len(dataframe.select_dtypes(include=["datetime"]).columns),
                 "duplicate_row_count": int(dataframe.duplicated().sum()) if row_count else 0,
             },
@@ -98,7 +98,7 @@ class DatasetProfiler:
         profile: dict[str, Any] = {}
 
         if data_type in {"number", "integer"} and not non_null.empty:
-            numeric = pd.to_numeric(non_null, errors="coerce").dropna()
+            numeric = coerce_numeric(non_null)
             if not numeric.empty:
                 min_value = str(sanitize_scalar(numeric.min()))
                 max_value = str(sanitize_scalar(numeric.max()))
@@ -144,7 +144,7 @@ class DatasetProfiler:
 
     def _outliers(self, dataframe: pd.DataFrame) -> dict[str, Any]:
         result: dict[str, Any] = {}
-        numeric_dataframe = dataframe.select_dtypes(include=["number"])
+        numeric_dataframe = analysis_numeric_dataframe(dataframe)
 
         for column in numeric_dataframe.columns:
             series = numeric_dataframe[column].dropna()
@@ -169,7 +169,7 @@ class DatasetProfiler:
         return result
 
     def _correlations(self, dataframe: pd.DataFrame) -> dict[str, Any]:
-        numeric_dataframe = dataframe.select_dtypes(include=["number"])
+        numeric_dataframe = analysis_numeric_dataframe(dataframe)
         if len(numeric_dataframe.columns) < 2:
             return {}
 
@@ -195,10 +195,13 @@ class DatasetProfiler:
         result: dict[str, Any] = {}
 
         for column in dataframe.columns:
-            if infer_data_type(dataframe[column]) != "datetime":
+            data_type = infer_data_type(dataframe[column])
+            if data_type == "datetime":
+                parsed = dataframe[column]
+            elif is_datetime_like_column(column):
                 parsed = parse_datetime(dataframe[column])
             else:
-                parsed = dataframe[column]
+                continue
 
             parsed = parsed.dropna()
             if parsed.empty:
@@ -214,7 +217,8 @@ class DatasetProfiler:
 
     def _categorical_aggregates(self, dataframe: pd.DataFrame) -> dict[str, Any]:
         result: dict[str, Any] = {}
-        numeric_columns = list(dataframe.select_dtypes(include=["number"]).columns)
+        numeric_dataframe = analysis_numeric_dataframe(dataframe)
+        numeric_columns = list(numeric_dataframe.columns)
         if not numeric_columns:
             return result
 
@@ -225,8 +229,9 @@ class DatasetProfiler:
             if unique_count == 0 or unique_count > 50:
                 continue
 
+            aggregate_frame = pd.concat([dataframe[[column]], numeric_dataframe], axis=1)
             grouped = (
-                dataframe.groupby(column, dropna=True)[numeric_columns]
+                aggregate_frame.groupby(column, dropna=True)[numeric_columns]
                 .mean(numeric_only=True)
                 .head(10)
                 .round(4)
@@ -278,6 +283,43 @@ def parse_datetime(series: pd.Series) -> pd.Series:
     with catch_warnings():
         simplefilter("ignore", UserWarning)
         return pd.to_datetime(series, errors="coerce")
+
+
+def analysis_numeric_dataframe(dataframe: pd.DataFrame) -> pd.DataFrame:
+    numeric_columns: dict[str, pd.Series] = {}
+    for column in dataframe.columns:
+        if infer_data_type(dataframe[column]) not in {"number", "integer"}:
+            continue
+        numeric = coerce_numeric(dataframe[column])
+        if numeric.empty:
+            continue
+        numeric_columns[column] = numeric
+
+    if not numeric_columns:
+        return pd.DataFrame(index=dataframe.index)
+    return pd.DataFrame(numeric_columns, index=dataframe.index)
+
+
+def coerce_numeric(series: pd.Series) -> pd.Series:
+    numeric = pd.to_numeric(series, errors="coerce")
+    if pd.api.types.is_bool_dtype(numeric):
+        numeric = numeric.astype("float64")
+    return numeric.astype("float64").dropna()
+
+
+def is_datetime_like_column(column: str) -> bool:
+    lower = column.strip().lower()
+    return any(
+        token in lower
+        for token in [
+            "date",
+            "datetime",
+            "time",
+            "timestamp",
+            "created_at",
+            "updated_at",
+        ]
+    )
 
 
 def sanitize_float(value: Any) -> float | None:

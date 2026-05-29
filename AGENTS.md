@@ -139,6 +139,9 @@ startup project and a portfolio-grade full-stack system.
   tooltips, and common field labels should render in Chinese where possible.
 - Recharts text should keep an explicit Chinese font stack such as Microsoft
   YaHei/PingFang/Noto Sans CJK/SimHei to avoid garbled chart labels.
+- Dataset profiling must treat boolean columns separately from numeric columns.
+  Coerce numeric analysis data to float before quantile/outlier/correlation work,
+  and only parse time series for true datetime columns or date/time-like names.
 - The user has not configured the large-model API key yet. Upload, parsing,
   deterministic charts, and dashboard persistence can still be tested; AI Q&A,
   AI insights, and AI Agent model-backed behavior need `MIMO_API_KEY` later.

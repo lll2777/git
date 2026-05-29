@@ -271,6 +271,19 @@
     - In-app browser verification was attempted but the browser reported
       `net::ERR_BLOCKED_BY_CLIENT` for `http://localhost:3000`; rely on local
       browser/manual visual check for this one.
+  - User uploaded `heart_disease_uci` and analysis failed with
+    `numpy boolean subtract, the '-' operator, is not supported`. Root cause was
+    pandas/numpy boolean data entering numeric quantile/correlation-style analysis.
+  - Dataset profiler was hardened:
+    - Numeric analysis now coerces numeric columns to `float64` before quantile,
+      outlier, correlation, and categorical aggregate calculations.
+    - Boolean columns remain typed as `boolean` and no longer enter boolean
+      percentile/subtraction paths.
+    - Time-series detection now parses only true datetime columns or columns with
+      date/time-like names, preventing ordinary integer columns such as age from
+      being interpreted as 1970 timestamps.
+  - Local reproduction with bool + numeric heart-like columns now completes
+    analysis successfully, and backend was restarted after the fix.
   - Do not expose or commit local secrets. Local ignored files now include root
     `.env` and `apps/web/.env.local`.
 
