@@ -290,6 +290,15 @@
     - Users can drag the vertical separator between 42% and 78%.
     - The selected width is persisted in localStorage.
     - Mobile keeps the original stacked layout.
+  - Upload-to-analysis workspace UX was improved:
+    - Recent datasets are now selectable instead of passive rows.
+    - Upload success selects the newly analyzed dataset and shows a clearer
+      success toast.
+    - Preview, charts, AI Q&A, insights, dashboards, async jobs, and Agent panels
+      now follow the selected ready dataset instead of silently using the first
+      ready dataset.
+    - Failed or uploaded datasets show a clear locked analysis notice and a
+      "重新分析" action where the backend supports rerunning analysis.
   - Do not expose or commit local secrets. Local ignored files now include root
     `.env` and `apps/web/.env.local`.
 

@@ -145,6 +145,10 @@ startup project and a portfolio-grade full-stack system.
 - Homepage desktop layout uses `ResizableWorkspaceLayout` so the right analysis
   column can be widened for chart review. Preserve the draggable desktop split and
   stacked mobile behavior when changing the workspace layout.
+- Upload workspace UX is selection-driven. The recent dataset list acts as the
+  dataset selector; downstream analysis panels should use the selected ready
+  dataset only. Failed/uploaded datasets should show a locked-state notice and a
+  rerun analysis action instead of silently showing another dataset's charts.
 - The user has not configured the large-model API key yet. Upload, parsing,
   deterministic charts, and dashboard persistence can still be tested; AI Q&A,
   AI insights, and AI Agent model-backed behavior need `MIMO_API_KEY` later.
