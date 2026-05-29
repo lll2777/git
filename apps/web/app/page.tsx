@@ -1,6 +1,7 @@
 import { Activity, BarChart3, Database, Sparkles } from "lucide-react";
 
 import { DatasetUploadCard } from "@/features/datasets/components/dataset-upload-card";
+import { ResizableWorkspaceLayout } from "@/features/workspace/components/resizable-workspace-layout";
 import { WorkspaceHero } from "@/features/workspace/components/workspace-hero";
 
 const metrics = [
@@ -26,33 +27,34 @@ export default function HomePage() {
           </div>
         </header>
 
-        <div className="grid flex-1 gap-6 py-8 lg:grid-cols-[1.15fr_0.85fr]">
-          <WorkspaceHero />
-
-          <aside className="space-y-4">
-            <DatasetUploadCard />
-            {metrics.map((metric) => {
-              const Icon = metric.icon;
-              return (
-                <div
-                  key={metric.label}
-                  className="rounded-3xl border border-white/10 bg-white/[0.04] p-5"
-                >
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm text-zinc-400">{metric.label}</p>
-                    <Icon
-                      className="h-5 w-5 text-zinc-400"
-                      aria-hidden="true"
-                    />
+        <ResizableWorkspaceLayout
+          left={<WorkspaceHero />}
+          right={
+            <>
+              <DatasetUploadCard />
+              {metrics.map((metric) => {
+                const Icon = metric.icon;
+                return (
+                  <div
+                    key={metric.label}
+                    className="rounded-3xl border border-white/10 bg-white/[0.04] p-5"
+                  >
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-zinc-400">{metric.label}</p>
+                      <Icon
+                        className="h-5 w-5 text-zinc-400"
+                        aria-hidden="true"
+                      />
+                    </div>
+                    <p className="mt-5 text-3xl font-semibold tracking-normal">
+                      {metric.value}
+                    </p>
                   </div>
-                  <p className="mt-5 text-3xl font-semibold tracking-normal">
-                    {metric.value}
-                  </p>
-                </div>
-              );
-            })}
-          </aside>
-        </div>
+                );
+              })}
+            </>
+          }
+        />
       </section>
     </main>
   );

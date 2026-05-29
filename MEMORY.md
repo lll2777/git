@@ -284,6 +284,12 @@
       being interpreted as 1970 timestamps.
   - Local reproduction with bool + numeric heart-like columns now completes
     analysis successfully, and backend was restarted after the fix.
+  - User reported the right workspace column was too narrow for the richer chart
+    grid. Homepage layout now uses a client-side resizable split view:
+    - Default right panel width is 60% on desktop.
+    - Users can drag the vertical separator between 42% and 78%.
+    - The selected width is persisted in localStorage.
+    - Mobile keeps the original stacked layout.
   - Do not expose or commit local secrets. Local ignored files now include root
     `.env` and `apps/web/.env.local`.
 
