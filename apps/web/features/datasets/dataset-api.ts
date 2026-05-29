@@ -108,11 +108,25 @@ export type DatasetProfile = {
   categorical_aggregates: Record<string, unknown>;
 };
 
-export type ChartKind = "bar" | "line" | "scatter";
+export type ChartKind =
+  | "area"
+  | "bar"
+  | "composed"
+  | "horizontal_bar"
+  | "line"
+  | "pie"
+  | "scatter";
 
 export type ChartConfig = {
   xKey: string;
-  yKey: string;
+  yKey?: string;
+  xLabel?: string;
+  yLabel?: string;
+  series?: Array<{
+    key: string;
+    label: string;
+    type: "area" | "bar" | "line";
+  }>;
   data: Array<Record<string, string | number | null>>;
 };
 

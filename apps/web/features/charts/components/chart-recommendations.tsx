@@ -3,11 +3,18 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BarChart3, Loader2, Sparkles } from "lucide-react";
 import {
+  Area,
+  AreaChart,
   Bar,
   BarChart,
   CartesianGrid,
+  Cell,
+  ComposedChart,
+  Legend,
   Line,
   LineChart,
+  Pie,
+  PieChart,
   ResponsiveContainer,
   Scatter,
   ScatterChart,
@@ -27,6 +34,24 @@ import {
 
 type ChartRecommendationsProps = {
   datasetId: string | undefined;
+};
+
+const chartColors = [
+  "#a7f3d0",
+  "#c4b5fd",
+  "#93c5fd",
+  "#fcd34d",
+  "#fda4af",
+  "#67e8f9",
+  "#f0abfc",
+  "#bef264",
+];
+const chartFontFamily =
+  '"Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", "Source Han Sans SC", SimHei, Arial, sans-serif';
+const commonTick = {
+  fill: "rgba(212,212,216,0.78)",
+  fontFamily: chartFontFamily,
+  fontSize: 11,
 };
 
 export function ChartRecommendations({ datasetId }: ChartRecommendationsProps) {
@@ -73,7 +98,7 @@ export function ChartRecommendations({ datasetId }: ChartRecommendationsProps) {
         <div>
           <p className="text-sm font-medium text-zinc-100">推荐图表</p>
           <p className="mt-1 text-xs text-zinc-500">
-            基于字段类型识别结果，生成可解释的图表建议。
+            基于字段类型、时间序列和分类聚合，生成多角度可解释图表。
           </p>
         </div>
         <Button
@@ -119,23 +144,23 @@ function ChartCard({ chart }: { chart: Chart }) {
   const hasData = Array.isArray(data) && data.length > 0;
 
   return (
-    <article className="min-h-80 rounded-3xl border border-white/10 bg-white/[0.03] p-4">
+    <article className="min-h-96 rounded-3xl border border-white/10 bg-white/[0.03] p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="truncate text-sm font-medium text-zinc-100">
-            {chart.title}
+            {chartTitle(chart)}
           </h3>
-          <p className="mt-1 text-xs uppercase tracking-wide text-zinc-500">
-            {chart.chart_type}
+          <p className="mt-1 text-xs text-zinc-500">
+            {chartTypeLabel(chart.chart_type)}
           </p>
         </div>
         <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs text-zinc-400">
-          {chart.created_by}
+          {chart.created_by === "system" ? "系统推荐" : chart.created_by}
         </span>
       </div>
 
       {hasData ? (
-        <div className="mt-4 h-60">
+        <div className="mt-4 h-72">
           <ResponsiveContainer height="100%" width="100%">
             {renderChart(chart)}
           </ResponsiveContainer>
@@ -150,20 +175,75 @@ function ChartCard({ chart }: { chart: Chart }) {
 }
 
 function renderChart(chart: Chart) {
-  const { data, xKey, yKey } = chart.config;
+  const { data, series, xKey, yKey } = chart.config;
+  const valueKey = yKey ?? "value";
   const gridColor = "rgba(255,255,255,0.08)";
   const axisColor = "rgba(212,212,216,0.72)";
 
+  if (chart.chart_type === "area") {
+    return (
+      <AreaChart data={data} margin={chartMargin}>
+        <CartesianGrid stroke={gridColor} strokeDasharray="3 3" />
+        <XAxis dataKey={xKey} stroke={axisColor} tick={commonTick} />
+        <YAxis stroke={axisColor} tick={commonTick} />
+        <Tooltip contentStyle={tooltipStyle} formatter={tooltipFormatter} />
+        <Area
+          dataKey={valueKey}
+          fill="#a7f3d0"
+          fillOpacity={0.22}
+          name={chart.config.yLabel ?? "数值"}
+          stroke="#a7f3d0"
+          strokeWidth={2}
+          type="monotone"
+        />
+      </AreaChart>
+    );
+  }
+
+  if (chart.chart_type === "composed" && series?.length) {
+    return (
+      <ComposedChart data={data} margin={chartMargin}>
+        <CartesianGrid stroke={gridColor} strokeDasharray="3 3" />
+        <XAxis dataKey={xKey} stroke={axisColor} tick={commonTick} />
+        <YAxis stroke={axisColor} tick={commonTick} />
+        <Tooltip contentStyle={tooltipStyle} formatter={tooltipFormatter} />
+        <Legend wrapperStyle={legendStyle} />
+        {series.map((item, index) =>
+          item.type === "line" ? (
+            <Line
+              dataKey={item.key}
+              dot={false}
+              key={item.key}
+              name={item.label}
+              stroke={chartColors[index % chartColors.length]}
+              strokeWidth={2}
+              type="monotone"
+            />
+          ) : (
+            <Bar
+              dataKey={item.key}
+              fill={chartColors[index % chartColors.length]}
+              key={item.key}
+              name={item.label}
+              radius={[8, 8, 0, 0]}
+            />
+          ),
+        )}
+      </ComposedChart>
+    );
+  }
+
   if (chart.chart_type === "line") {
     return (
-      <LineChart data={data}>
+      <LineChart data={data} margin={chartMargin}>
         <CartesianGrid stroke={gridColor} strokeDasharray="3 3" />
-        <XAxis dataKey={xKey} stroke={axisColor} tick={{ fontSize: 11 }} />
-        <YAxis stroke={axisColor} tick={{ fontSize: 11 }} />
-        <Tooltip contentStyle={tooltipStyle} />
+        <XAxis dataKey={xKey} stroke={axisColor} tick={commonTick} />
+        <YAxis stroke={axisColor} tick={commonTick} />
+        <Tooltip contentStyle={tooltipStyle} formatter={tooltipFormatter} />
         <Line
-          dataKey={yKey}
+          dataKey={valueKey}
           dot={false}
+          name={chart.config.yLabel ?? "数值"}
           stroke="#a7f3d0"
           strokeWidth={2}
           type="monotone"
@@ -174,26 +254,92 @@ function renderChart(chart: Chart) {
 
   if (chart.chart_type === "scatter") {
     return (
-      <ScatterChart>
+      <ScatterChart margin={chartMargin}>
         <CartesianGrid stroke={gridColor} strokeDasharray="3 3" />
-        <XAxis dataKey={xKey} name={xKey} stroke={axisColor} type="number" />
-        <YAxis dataKey={yKey} name={yKey} stroke={axisColor} type="number" />
+        <XAxis
+          dataKey={xKey}
+          name={chart.config.xLabel ?? xKey}
+          stroke={axisColor}
+          tick={commonTick}
+          type="number"
+        />
+        <YAxis
+          dataKey={valueKey}
+          name={chart.config.yLabel ?? valueKey}
+          stroke={axisColor}
+          tick={commonTick}
+          type="number"
+        />
         <Tooltip
           contentStyle={tooltipStyle}
           cursor={{ strokeDasharray: "3 3" }}
+          formatter={tooltipFormatter}
         />
-        <Scatter data={data} fill="#93c5fd" />
+        <Scatter data={data} fill="#93c5fd" name={chartTitle(chart)} />
       </ScatterChart>
     );
   }
 
+  if (chart.chart_type === "pie") {
+    return (
+      <PieChart margin={chartMargin}>
+        <Tooltip contentStyle={tooltipStyle} formatter={tooltipFormatter} />
+        <Legend wrapperStyle={legendStyle} />
+        <Pie
+          cx="50%"
+          cy="48%"
+          data={data}
+          dataKey={valueKey}
+          innerRadius="48%"
+          label={({ name }) => String(name)}
+          labelLine={false}
+          nameKey={xKey}
+          outerRadius="78%"
+          paddingAngle={2}
+        >
+          {data.map((_, index) => (
+            <Cell fill={chartColors[index % chartColors.length]} key={index} />
+          ))}
+        </Pie>
+      </PieChart>
+    );
+  }
+
+  if (chart.chart_type === "horizontal_bar") {
+    return (
+      <BarChart data={data} layout="vertical" margin={horizontalBarMargin}>
+        <CartesianGrid stroke={gridColor} strokeDasharray="3 3" />
+        <XAxis stroke={axisColor} tick={commonTick} type="number" />
+        <YAxis
+          dataKey={xKey}
+          stroke={axisColor}
+          tick={commonTick}
+          type="category"
+          width={72}
+        />
+        <Tooltip contentStyle={tooltipStyle} formatter={tooltipFormatter} />
+        <Bar
+          dataKey={valueKey}
+          fill="#c4b5fd"
+          name={chart.config.yLabel ?? "数值"}
+          radius={[0, 8, 8, 0]}
+        />
+      </BarChart>
+    );
+  }
+
   return (
-    <BarChart data={data}>
+    <BarChart data={data} margin={chartMargin}>
       <CartesianGrid stroke={gridColor} strokeDasharray="3 3" />
-      <XAxis dataKey={xKey} stroke={axisColor} tick={{ fontSize: 11 }} />
-      <YAxis stroke={axisColor} tick={{ fontSize: 11 }} />
-      <Tooltip contentStyle={tooltipStyle} />
-      <Bar dataKey={yKey} fill="#c4b5fd" radius={[8, 8, 0, 0]} />
+      <XAxis dataKey={xKey} stroke={axisColor} tick={commonTick} />
+      <YAxis stroke={axisColor} tick={commonTick} />
+      <Tooltip contentStyle={tooltipStyle} formatter={tooltipFormatter} />
+      <Bar
+        dataKey={valueKey}
+        fill="#c4b5fd"
+        name={chart.config.yLabel ?? "数值"}
+        radius={[8, 8, 0, 0]}
+      />
     </BarChart>
   );
 }
@@ -212,7 +358,129 @@ const tooltipStyle = {
   border: "1px solid rgba(255,255,255,0.12)",
   borderRadius: "16px",
   color: "#f4f4f5",
+  fontFamily: chartFontFamily,
 };
+
+const legendStyle = {
+  color: "#d4d4d8",
+  fontFamily: chartFontFamily,
+  fontSize: 12,
+};
+
+const chartMargin = {
+  bottom: 8,
+  left: 4,
+  right: 12,
+  top: 10,
+};
+
+const horizontalBarMargin = {
+  bottom: 8,
+  left: 12,
+  right: 12,
+  top: 10,
+};
+
+function tooltipFormatter(value: unknown, name: unknown) {
+  return [formatChartValue(value), String(name)];
+}
+
+function formatChartValue(value: unknown) {
+  if (typeof value !== "number") {
+    return String(value ?? "");
+  }
+  return new Intl.NumberFormat("zh-CN", {
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
+function chartTypeLabel(type: Chart["chart_type"]) {
+  const labels: Record<Chart["chart_type"], string> = {
+    area: "面积图",
+    bar: "柱状图",
+    composed: "组合图",
+    horizontal_bar: "横向柱状图",
+    line: "折线图",
+    pie: "环形图",
+    scatter: "散点图",
+  };
+
+  return labels[type] ?? type;
+}
+
+function chartTitle(chart: Chart) {
+  const spec = chart.query_spec;
+  const category = fieldLabel(String(spec.category ?? ""));
+  const metric = fieldLabel(String(spec.metric ?? ""));
+  const dateColumn = fieldLabel(String(spec.date_column ?? ""));
+  const xAxis = fieldLabel(String(spec.x_axis ?? ""));
+  const yAxis = fieldLabel(String(spec.y_axis ?? ""));
+
+  if (chart.chart_type === "pie" && category && metric) {
+    return `${metric}按${category}占比`;
+  }
+  if (
+    (chart.chart_type === "bar" || chart.chart_type === "horizontal_bar") &&
+    category &&
+    metric
+  ) {
+    return `${metric}按${category}汇总`;
+  }
+  if (
+    (chart.chart_type === "line" || chart.chart_type === "area") &&
+    dateColumn &&
+    metric
+  ) {
+    return `${metric}趋势`;
+  }
+  if (chart.chart_type === "scatter" && xAxis && yAxis) {
+    return `${yAxis}与${xAxis}关系`;
+  }
+
+  return localizeLegacyTitle(chart.title);
+}
+
+function localizeLegacyTitle(title: string) {
+  const byMatch = title.match(/^(.+)\s+by\s+(.+)$/i);
+  if (byMatch) {
+    return `${fieldLabel(byMatch[1])}按${fieldLabel(byMatch[2])}汇总`;
+  }
+
+  const overMatch = title.match(/^(.+)\s+over\s+(.+)$/i);
+  if (overMatch) {
+    return `${fieldLabel(overMatch[1])}趋势`;
+  }
+
+  const vsMatch = title.match(/^(.+)\s+vs\s+(.+)$/i);
+  if (vsMatch) {
+    return `${fieldLabel(vsMatch[1])}与${fieldLabel(vsMatch[2])}关系`;
+  }
+
+  return title;
+}
+
+function fieldLabel(name: string) {
+  const normalized = name.trim().toLowerCase();
+  const labels: Record<string, string> = {
+    amount: "金额",
+    category: "分类",
+    channel: "渠道",
+    cost: "成本",
+    customer: "客户",
+    date: "日期",
+    margin: "利润率",
+    price: "价格",
+    product: "产品",
+    profit: "利润",
+    quantity: "数量",
+    region: "区域",
+    revenue: "收入",
+    sales: "销售额",
+    time: "时间",
+  };
+
+  return labels[normalized] ?? name.trim();
+}
 
 async function requireAccessToken(
   getAccessToken: () => Promise<string | null>,

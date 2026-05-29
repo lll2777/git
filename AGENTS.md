@@ -135,6 +135,10 @@ startup project and a portfolio-grade full-stack system.
 - Homepage login UI should be auth-aware through the client `WorkspaceHero`
   component; do not reintroduce static login buttons that stay visible after
   login.
+- Visualization UI should be Chinese-first. Chart titles, chart type labels,
+  tooltips, and common field labels should render in Chinese where possible.
+- Recharts text should keep an explicit Chinese font stack such as Microsoft
+  YaHei/PingFang/Noto Sans CJK/SimHei to avoid garbled chart labels.
 - The user has not configured the large-model API key yet. Upload, parsing,
   deterministic charts, and dashboard persistence can still be tested; AI Q&A,
   AI insights, and AI Agent model-backed behavior need `MIMO_API_KEY` later.

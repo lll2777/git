@@ -255,6 +255,22 @@
     bar/line/scatter recommendations.
   - Next session can continue from post-import product hardening rather than
     re-debugging upload/auth, unless the issue reappears after a restart.
+  - User requested richer visualization and Chinese chart text. Chart work added:
+    - Backend deterministic recommendations now produce up to 10 charts from the
+      same dataset, including bar, horizontal bar, pie/donut, line, area,
+      composed, and scatter chart configs.
+    - Backend chart titles and common field labels are localized to Chinese for
+      common fields such as date, region, channel, revenue, and cost.
+    - Frontend Recharts renderer now supports the added chart types, Chinese chart
+      type labels, Chinese/legacy-title fallback localization, Chinese tooltip
+      formatting, and an explicit Chinese font stack to reduce garbled text risk.
+    - Local recommender smoke check against the sales demo shape returned 10 chart
+      configs with Chinese titles.
+    - Backend was restarted after the change so local "生成图表" uses the updated
+      recommender.
+    - In-app browser verification was attempted but the browser reported
+      `net::ERR_BLOCKED_BY_CLIENT` for `http://localhost:3000`; rely on local
+      browser/manual visual check for this one.
   - Do not expose or commit local secrets. Local ignored files now include root
     `.env` and `apps/web/.env.local`.
 
