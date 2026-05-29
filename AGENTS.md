@@ -149,6 +149,10 @@ startup project and a portfolio-grade full-stack system.
   dataset selector; downstream analysis panels should use the selected ready
   dataset only. Failed/uploaded datasets should show a locked-state notice and a
   rerun analysis action instead of silently showing another dataset's charts.
+- Dataset AI Q&A sends tools to MiMo. If the provider returns `tool_calls` with
+  empty content, execute the local dataset-context tool and make a follow-up
+  model call before storing the assistant answer. Do not regress to saving the
+  English fallback "I could not generate an answer." for valid tool-call flows.
 - The user has not configured the large-model API key yet. Upload, parsing,
   deterministic charts, and dashboard persistence can still be tested; AI Q&A,
   AI insights, and AI Agent model-backed behavior need `MIMO_API_KEY` later.

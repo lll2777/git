@@ -310,6 +310,12 @@
     the full key. The backend was restarted in the `pytorch` environment, health
     check passed at `/api/v1/health`, and `scripts/test_mimo_provider.py` returned
     `mimo provider ok` against `mimo-v2.5`.
+  - User tested AI Q&A and saw "I could not generate an answer." Root cause:
+    MiMo returned an OpenAI-style `tool_calls` response with empty `content` when
+    dataset Q&A sent tools, but the backend did not execute the tool call and
+    make a follow-up model request. The fix added tool-call follow-up handling in
+    dataset Q&A, keeps final answers in Chinese, and added a unittest for
+    OpenAI-compatible tool-result message construction.
   - Do not expose or commit local secrets. Local ignored files now include root
     `.env` and `apps/web/.env.local`.
 

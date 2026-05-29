@@ -119,20 +119,54 @@ class DatasetQuestionService:
         charts: list[dict[str, Any]],
         recent_messages,
     ) -> dict[str, Any]:
+        context = build_dataset_context(profile=profile, preview=preview, charts=charts)
+        messages = build_messages(
+            context=context,
+            recent_messages=recent_messages,
+        )
         try:
-            return await self.ai_service.chat(
-                messages=build_messages(
-                    profile=profile,
-                    preview=preview,
-                    charts=charts,
-                    recent_messages=recent_messages,
-                ),
+            ai_result = await self.ai_service.chat(
+                messages=messages,
                 tools=DATASET_QA_TOOLS,
                 metadata={
                     "capability": "dataset_qa",
                     "dataset_id": profile.dataset.id,
                 },
             )
+            if ai_result.get("content"):
+                return ai_result
+
+            tool_calls = ai_result.get("tool_calls") or []
+            if not tool_calls:
+                return ai_result
+
+            followup_messages = [
+                *messages,
+                *build_tool_followup_messages(
+                    context=context,
+                    tool_calls=tool_calls,
+                ),
+                {
+                    "role": "system",
+                    "content": (
+                        "请根据上面的工具结果，用中文给出最终答案。"
+                        "不要再调用工具，不要输出英文兜底句。"
+                    ),
+                },
+            ]
+            followup_result = await self.ai_service.chat(
+                messages=followup_messages,
+                metadata={
+                    "capability": "dataset_qa_tool_followup",
+                    "dataset_id": profile.dataset.id,
+                },
+            )
+            followup_result["tool_calls"] = tool_calls
+            followup_result["metadata"] = {
+                **(followup_result.get("metadata") or {}),
+                "tool_followup": True,
+            }
+            return followup_result
         except httpx.HTTPStatusError as exc:
             raise HTTPException(
                 status_code=status.HTTP_502_BAD_GATEWAY,
@@ -147,20 +181,17 @@ class DatasetQuestionService:
 
 def build_messages(
     *,
-    profile: DatasetProfileResponse,
-    preview: DatasetPreviewResponse,
-    charts: list[dict[str, Any]],
+    context: dict[str, Any],
     recent_messages,
 ) -> list[dict[str, str]]:
-    context = build_dataset_context(profile=profile, preview=preview, charts=charts)
     messages = [
         {
             "role": "system",
             "content": (
-                "You are an AI data analyst inside a production SaaS product. "
-                "Answer using only the provided dataset context. "
-                "Be concise, mention uncertainty, and do not invent columns or rows. "
-                "When helpful, cite the exact columns or chart configs you used."
+                "你是生产级 SaaS 产品里的 AI 数据分析师。"
+                "只能基于提供的数据集上下文回答，不要编造列名、行数据或事实。"
+                "回答必须使用中文，保持简洁，并在不确定时说明不确定。"
+                "有帮助时引用你使用的字段、统计摘要或图表配置。"
             ),
         },
         {
@@ -174,6 +205,103 @@ def build_messages(
         if message.role in {"user", "assistant"}
     )
     return messages
+
+
+def build_tool_followup_messages(
+    *,
+    context: dict[str, Any],
+    tool_calls: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    messages: list[dict[str, Any]] = [
+        {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": tool_calls,
+        }
+    ]
+    for tool_call in tool_calls:
+        function = tool_call.get("function") or {}
+        tool_name = function.get("name") or ""
+        arguments = parse_tool_arguments(function.get("arguments"))
+        result = execute_dataset_context_tool(
+            context=context,
+            tool_name=tool_name,
+            arguments=arguments,
+        )
+        messages.append(
+            {
+                "role": "tool",
+                "tool_call_id": tool_call.get("id"),
+                "name": tool_name,
+                "content": json.dumps(result, ensure_ascii=False),
+            }
+        )
+    return messages
+
+
+def parse_tool_arguments(raw_arguments: Any) -> dict[str, Any]:
+    if isinstance(raw_arguments, dict):
+        return raw_arguments
+    if not isinstance(raw_arguments, str) or not raw_arguments.strip():
+        return {}
+    try:
+        parsed = json.loads(raw_arguments)
+    except json.JSONDecodeError:
+        return {}
+    return parsed if isinstance(parsed, dict) else {}
+
+
+def execute_dataset_context_tool(
+    *,
+    context: dict[str, Any],
+    tool_name: str,
+    arguments: dict[str, Any],
+) -> dict[str, Any]:
+    if tool_name != "describe_dataset_context":
+        return {
+            "error": f"Unsupported tool: {tool_name}",
+        }
+
+    focus = str(arguments.get("focus") or "summary").strip() or "summary"
+    focus_key = normalize_context_focus(focus)
+    return {
+        "focus": focus_key,
+        "result": context.get(focus_key, context),
+    }
+
+
+def normalize_context_focus(focus: str) -> str:
+    normalized = focus.lower().strip()
+    aliases = {
+        "dataset": "dataset",
+        "数据集": "dataset",
+        "columns": "columns",
+        "schema": "columns",
+        "字段": "columns",
+        "字段画像": "columns",
+        "summary": "summary",
+        "概览": "summary",
+        "摘要": "summary",
+        "数据集概述": "summary",
+        "missing_values": "missing_values",
+        "missing": "missing_values",
+        "缺失值": "missing_values",
+        "outliers": "outliers",
+        "异常": "outliers",
+        "异常点": "outliers",
+        "correlations": "correlations",
+        "相关性": "correlations",
+        "time_series": "time_series",
+        "趋势": "time_series",
+        "categorical_aggregates": "categorical_aggregates",
+        "分类聚合": "categorical_aggregates",
+        "preview": "preview_rows",
+        "preview_rows": "preview_rows",
+        "预览": "preview_rows",
+        "charts": "charts",
+        "图表": "charts",
+    }
+    return aliases.get(normalized, normalized)
 
 
 def build_dataset_context(
