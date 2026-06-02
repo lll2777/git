@@ -153,11 +153,16 @@ startup project and a portfolio-grade full-stack system.
   empty content, execute the local dataset-context tool and make a follow-up
   model call before storing the assistant answer. Do not regress to saving the
   English fallback "I could not generate an answer." for valid tool-call flows.
-- The user has not configured the large-model API key yet. Upload, parsing,
-  deterministic charts, and dashboard persistence can still be tested; AI Q&A,
-  AI insights, and AI Agent model-backed behavior need `MIMO_API_KEY` later.
+- The user has configured the local large-model API key. Upload, parsing,
+  deterministic charts, dashboard persistence, AI Q&A, AI insights, and AI Agent
+  model-backed behavior can now be tested locally.
 - User's current MiMo subscription shows the OpenAI-compatible base URL
   `https://token-plan-cn.xiaomimimo.com/v1` and available models including
   `mimo-v2.5` and `MIMO-v2.5-pro`; use `mimo-v2.5` as the default local model.
-  Test live connectivity with `conda run -n pytorch python scripts/test_mimo_provider.py`
-  after the user adds `MIMO_API_KEY` to `.env`.
+- Local MiMo live connectivity has passed once with `MIMO_BASE_URL` set to
+  `https://token-plan-cn.xiaomimimo.com/v1` and `MIMO_MODEL=mimo-v2.5`, returning
+  `mimo provider ok` and usage metadata. Later repeat runs hit connection-layer
+  `httpx.ConnectError`, so re-test live MiMo if model-backed behavior appears
+  unavailable.
+- Local `.env` may include a UTF-8 BOM. `scripts/check_env.py` intentionally reads
+  env files with `utf-8-sig`; keep that compatibility.

@@ -316,6 +316,15 @@
     make a follow-up model request. The fix added tool-call follow-up handling in
     dataset Q&A, keeps final answers in Chinese, and added a unittest for
     OpenAI-compatible tool-result message construction.
+  - User confirmed the local large-model API key is configured. Live MiMo
+    connectivity was verified against `https://token-plan-cn.xiaomimimo.com/v1`
+    with `mimo-v2.5`; the script returned `mimo provider ok`, a Chinese response,
+    and token usage metadata. Later repeat runs in the same session failed at the
+    connection layer with `httpx.ConnectError`, so treat live MiMo connectivity as
+    configured but currently network/proxy-flaky. Do not expose or commit the key.
+  - Local testing found that `.env` starts with a UTF-8 BOM. `scripts/check_env.py`
+    now reads env files with `utf-8-sig`, and `scripts/test_check_env.py` covers
+    BOM-compatible parsing.
   - Do not expose or commit local secrets. Local ignored files now include root
     `.env` and `apps/web/.env.local`.
 
